@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -11,11 +11,11 @@ const Login = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Redirect if already logged in
-  if (user) {
-    navigate('/');
-    return null;
-  }
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -39,7 +39,7 @@ const Login = () => {
 
   return (
     <div className="auth-container">
-      <h2>Login to Quiz App</h2>
+      <h2>Welcome Back</h2>
       {error && <div className="error-message">{error}</div>}
       
       <form onSubmit={handleLogin}>
@@ -65,12 +65,12 @@ const Login = () => {
           />
         </div>
         
-        <button type="submit" disabled={loading}>
+        <button type="submit" disabled={loading} className="auth-button">
           {loading ? 'Logging in...' : 'Login'}
         </button>
       </form>
       
-      <p>
+      <p className="auth-switch">
         Don't have an account? <Link to="/signup">Sign Up</Link>
       </p>
     </div>

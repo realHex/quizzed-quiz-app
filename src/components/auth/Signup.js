@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../utils/supabase';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
@@ -12,11 +12,11 @@ const Signup = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  // Redirect if already logged in
-  if (user) {
-    navigate('/');
-    return null;
-  }
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -55,7 +55,7 @@ const Signup = () => {
 
   return (
     <div className="auth-container">
-      <h2>Create an Account</h2>
+      <h2>Create Account</h2>
       {error && <div className="error-message">{error}</div>}
       
       <form onSubmit={handleSignup}>
@@ -92,12 +92,12 @@ const Signup = () => {
           />
         </div>
         
-        <button type="submit" disabled={loading}>
+        <button type="submit" disabled={loading} className="auth-button">
           {loading ? 'Creating Account...' : 'Sign Up'}
         </button>
       </form>
       
-      <p>
+      <p className="auth-switch">
         Already have an account? <Link to="/login">Login</Link>
       </p>
     </div>
