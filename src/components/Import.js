@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -9,8 +9,36 @@ const Import = () => {
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
+  const [userImports, setUserImports] = useState([]);
+  const [loadingImports, setLoadingImports] = useState(true);
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
   const { user } = useAuth();
   const navigate = useNavigate();
+
+  // Fetch user's imported files
+  useEffect(() => {
+    fetchUserImports();
+  }, [user]);
+
+  const fetchUserImports = async () => {
+    if (!user) return;
+
+    setLoadingImports(true);
+    try {
+      const { data, error } = await supabase
+        .from('imports')
+        .select('*')
+        .eq('user', user.id)
+        .order('uploaded_at', { ascending: false }); // Changed from created_at to uploaded_at
+
+      if (error) throw error;
+      setUserImports(data || []);
+    } catch (err) {
+      console.error('Error fetching user imports:', err);
+    } finally {
+      setLoadingImports(false);
+    }
+  };
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -97,6 +125,9 @@ const Import = () => {
       setFile(null);
       // Reset the file input
       document.getElementById('file-upload').value = '';
+      
+      // After successful upload, refresh the user's imports list
+      fetchUserImports();
     } catch (err) {
       console.error('Upload error:', err);
       setError(err.message || 'Failed to upload file');
@@ -117,6 +148,41 @@ const Import = () => {
         fileInput.value = '';
       }
     }, 0);
+  };
+
+  const confirmDelete = (importItem) => {
+    setDeleteConfirm(importItem);
+  };
+
+  const cancelDelete = () => {
+    setDeleteConfirm(null);
+  };
+
+  const handleDelete = async (importItem) => {
+    try {
+      // Delete from storage bucket
+      const { error: storageError } = await supabase
+        .storage
+        .from('quizes')
+        .remove([importItem.quiz_name]);
+
+      if (storageError) throw storageError;
+
+      // Delete from imports table
+      const { error: dbError } = await supabase
+        .from('imports')
+        .delete()
+        .eq('id', importItem.id);
+
+      if (dbError) throw dbError;
+
+      // Refresh the list
+      setDeleteConfirm(null);
+      fetchUserImports();
+    } catch (err) {
+      console.error('Error deleting file:', err);
+      setError(`Failed to delete ${importItem.quiz_name}: ${err.message}`);
+    }
   };
 
   return (
@@ -187,7 +253,63 @@ const Import = () => {
             </div>
           )}
         </div>
+
+        {/* Uploaded files section */}
+        <div className="user-imports-section">
+          <h3>Your Uploaded Quizzes</h3>
+          
+          {loadingImports ? (
+            <div className="imports-loading">Loading your uploads...</div>
+          ) : userImports.length === 0 ? (
+            <div className="no-imports">No quizzes uploaded yet.</div>
+          ) : (
+            <div className="imports-list">
+              {userImports.map(importItem => (
+                <div key={importItem.id} className="import-item">
+                  <div className="import-item-name" title={importItem.quiz_name}>
+                    {importItem.quiz_name}
+                  </div>
+                  <div className="import-item-date">
+                    {new Date(importItem.uploaded_at).toLocaleDateString()} {/* Changed from created_at to uploaded_at */}
+                  </div>
+                  <button 
+                    className="delete-import-btn"
+                    onClick={() => confirmDelete(importItem)}
+                    title="Delete quiz"
+                  >
+                    🗑️
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Confirmation dialog */}
+      {deleteConfirm && (
+        <div className="delete-modal-backdrop">
+          <div className="delete-modal">
+            <h3>Confirm Deletion</h3>
+            <p>Are you sure you want to delete "{deleteConfirm.quiz_name}"?</p>
+            <p>This action cannot be undone.</p>
+            <div className="delete-modal-actions">
+              <button 
+                onClick={() => handleDelete(deleteConfirm)} 
+                className="confirm-delete-btn"
+              >
+                Yes, Delete
+              </button>
+              <button 
+                onClick={cancelDelete} 
+                className="cancel-delete-btn"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
