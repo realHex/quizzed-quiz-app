@@ -8,10 +8,12 @@ import Signup from './components/auth/Signup';
 import QuizSelection from './components/QuizSelection';
 import Quiz from './components/Quiz';
 import History from './components/History';
+import Import from './components/Import'; // Add this import
 import './App.css';
 import './styles/QuizSelection.css';
 import './styles/Quiz.css';
 import './styles/History.css';
+import './styles/Import.css'; // Add this import
 
 function App() {
   return (
@@ -44,6 +46,14 @@ function App() {
                 element={
                   <PrivateRoute>
                     <History />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/import" 
+                element={
+                  <PrivateRoute>
+                    <Import />
                   </PrivateRoute>
                 } 
               />
