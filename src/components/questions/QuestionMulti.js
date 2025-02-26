@@ -1,12 +1,14 @@
 import React from 'react';
 import '../../styles/Question.css';
 
-const QuestionMulti = ({ question, answer, onAnswerChange }) => {
+const QuestionMulti = ({ question, answer, onAnswerChange, disabled }) => {
   const isOptionSelected = (index) => {
     return answer.includes(String(index + 1));
   };
 
   const handleCheckboxChange = (index) => {
+    if (disabled) return;
+
     const optionValue = String(index + 1);
     let updatedAnswer;
     
@@ -34,6 +36,7 @@ const QuestionMulti = ({ question, answer, onAnswerChange }) => {
               value={index + 1}
               checked={isOptionSelected(index)}
               onChange={() => handleCheckboxChange(index)}
+              disabled={disabled}
             />
             {option}
           </label>

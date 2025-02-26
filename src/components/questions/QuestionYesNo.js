@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../styles/Question.css';
 
-const QuestionYesNo = ({ question, answer, onAnswerChange }) => {
+const QuestionYesNo = ({ question, answer, onAnswerChange, disabled }) => {
   return (
     <div className="question yesno-question">
       <h3>{question.text}</h3>
@@ -13,6 +13,7 @@ const QuestionYesNo = ({ question, answer, onAnswerChange }) => {
             value="yes"
             checked={answer === 'yes'}
             onChange={() => onAnswerChange('yes')}
+            disabled={disabled}
           />
           Yes
         </label>
@@ -24,6 +25,7 @@ const QuestionYesNo = ({ question, answer, onAnswerChange }) => {
             value="no"
             checked={answer === 'no'}
             onChange={() => onAnswerChange('no')}
+            disabled={disabled}
           />
           No
         </label>

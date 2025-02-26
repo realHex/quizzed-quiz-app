@@ -1,22 +1,19 @@
 import React from 'react';
-import '../../styles/Question.css';
 
-const QuestionMCQ = ({ question, answer, onAnswerChange }) => {
+const QuestionMCQ = ({ question, answer, onAnswerChange, disabled }) => {
   return (
-    <div className="question mcq-question">
-      <h3>{question.text}</h3>
-      <div className="options-container">
+    <div className="question-content">
+      <h3>{question.question}</h3>
+      <div className="question-options">
         {question.options.map((option, index) => (
-          <label key={index} className={`option ${answer === String(index + 1) ? 'selected' : ''}`}>
-            <input
-              type="radio"
-              name={`question-${question.id}`}
-              value={index + 1}
-              checked={answer === String(index + 1)}
-              onChange={() => onAnswerChange(String(index + 1))}
-            />
+          <button
+            key={index}
+            onClick={() => onAnswerChange((index + 1).toString())}
+            className={`option-button ${answer === (index + 1).toString() ? 'selected' : ''}`}
+            disabled={disabled}
+          >
             {option}
-          </label>
+          </button>
         ))}
       </div>
     </div>
