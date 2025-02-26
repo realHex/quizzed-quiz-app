@@ -1,21 +1,37 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import QuizSelection from './components/QuizSelection';
-import QuizAttempt from './components/QuizAttempt';
-import QuizResult from './components/QuizResult';
+import { AuthProvider } from './context/AuthContext';
+import PrivateRoute from './components/auth/PrivateRoute';
+import Header from './components/layout/Header';
+import Login from './components/auth/Login';
+import Signup from './components/auth/Signup';
+import Home from './components/Home'; // Your existing Home component
 import './App.css';
 
 function App() {
   return (
-    <div className="App">
+    <AuthProvider>
       <Router>
-        <Routes>
-          <Route path="/" element={<QuizSelection />} />
-          <Route path="/quiz/:quizName" element={<QuizAttempt />} />
-          <Route path="/result/:quizName" element={<QuizResult />} />
-        </Routes>
+        <div className="app">
+          <Header />
+          <main className="main-content">
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route 
+                path="/" 
+                element={
+                  <PrivateRoute>
+                    <Home />
+                  </PrivateRoute>
+                } 
+              />
+              {/* Add other protected routes as needed */}
+            </Routes>
+          </main>
+        </div>
       </Router>
-    </div>
+    </AuthProvider>
   );
 }
 
