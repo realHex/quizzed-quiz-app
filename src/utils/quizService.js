@@ -10,17 +10,12 @@ export const fetchQuizList = async () => {
 
     if (storageError) throw storageError;
 
-    // Return only CSV files with basic information
+    // Return only CSV files with simplified information
     return storageFiles
       .filter(file => file.name.endsWith('.csv'))
       .map(file => ({
         fileName: file.name,
-        title: file.name.replace('.csv', ''),
-        description: 'Take this quiz to test your knowledge.',
-        category: 'General',
-        difficulty: 'medium',
-        questionCount: '?',
-        timeEstimate: '10 min'
+        title: file.name.replace('.csv', '')
       }));
   } catch (error) {
     console.error('Error fetching quiz list:', error);

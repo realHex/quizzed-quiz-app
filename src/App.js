@@ -11,6 +11,7 @@ import History from './components/History';
 import './App.css';
 import './styles/QuizSelection.css';
 import './styles/Quiz.css';
+import './styles/History.css';
 
 function App() {
   return (
