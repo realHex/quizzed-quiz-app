@@ -1,0 +1,44 @@
+.history-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.history-container h2 {
+  color: #2d3748;
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.attempts-list {
+  display: grid;
+  gap: 20px;
+}
+
+.attempt-card {
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease;
+}
+
+.attempt-card:hover {
+  transform: translateY(-2px);
+}
+
+.attempt-card h3 {
+  color: #4a5568;
+  margin-bottom: 12px;
+}
+
+.attempt-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.attempt-details p {
+  color: #718096;
+  margin: 0;
+}

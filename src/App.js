@@ -6,7 +6,9 @@ import Header from './components/layout/Header';
 import Login from './components/auth/Login';
 import Signup from './components/auth/Signup';
 import QuizSelection from './components/QuizSelection';
+import History from './components/History';
 import './App.css';
+import './styles/History.css';
 
 function App() {
   return (
@@ -23,6 +25,14 @@ function App() {
                 element={
                   <PrivateRoute>
                     <QuizSelection />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
+                path="/history" 
+                element={
+                  <PrivateRoute>
+                    <History />
                   </PrivateRoute>
                 } 
               />

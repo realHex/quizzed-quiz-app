@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { fetchAvailableQuizzes } from '../services/quizService';
+import { fetchQuizList } from '../utils/quizService';
 import '../styles/QuizSelection.css';
 
 // Mock data for known quizzes only
@@ -33,7 +33,7 @@ const QuizSelection = () => {
   useEffect(() => {
     const loadQuizzes = async () => {
       try {
-        const availableQuizzes = await fetchAvailableQuizzes();
+        const availableQuizzes = await fetchQuizList();
         setQuizzes(availableQuizzes);
         
         // Extract unique categories
@@ -47,9 +47,9 @@ const QuizSelection = () => {
         });
         setCategories(Array.from(categoriesSet));
         
-        setLoading(false);
       } catch (error) {
         console.error("Failed to load quizzes:", error);
+      } finally {
         setLoading(false);
       }
     };
