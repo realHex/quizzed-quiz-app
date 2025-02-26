@@ -3,6 +3,7 @@ import Papa from 'papaparse';
 
 export const fetchQuizList = async () => {
   try {
+    // Get files from storage
     const { data: storageFiles, error: storageError } = await supabase
       .storage
       .from('quizes')
@@ -10,13 +11,50 @@ export const fetchQuizList = async () => {
 
     if (storageError) throw storageError;
 
-    // Return only CSV files with simplified information
-    return storageFiles
-      .filter(file => file.name.endsWith('.csv'))
-      .map(file => ({
+    // Filter to get only CSV files
+    const csvFiles = storageFiles.filter(file => file.name.endsWith('.csv'));
+    
+    // Fetch import records
+    const { data: importRecords, error: importError } = await supabase
+      .from('imports')
+      .select('quiz_name, user');
+      
+    if (importError) throw importError;
+    
+    // Get unique user IDs from imports
+    const userIds = [...new Set(importRecords.map(record => record.user))];
+    
+    // Fetch user profiles separately
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, name')
+      .in('id', userIds);
+      
+    if (profilesError) throw profilesError;
+    
+    // Create a map of user IDs to names for quick lookup
+    const userMap = {};
+    profiles.forEach(profile => {
+      userMap[profile.id] = profile.name;
+    });
+    
+    // Map files to quiz objects with uploader info
+    return csvFiles.map(file => {
+      // Find matching import record
+      const importRecord = importRecords.find(record => record.quiz_name === file.name);
+      const uploaderName = importRecord ? userMap[importRecord.user] || 'Unknown' : 'Unknown';
+      
+      return {
         fileName: file.name,
-        title: file.name.replace('.csv', '')
-      }));
+        title: file.name.replace('.csv', ''),
+        description: 'Take this quiz to test your knowledge.',
+        category: 'General',
+        difficulty: 'medium',
+        questionCount: '?',
+        timeEstimate: '10 min',
+        uploaderName: uploaderName
+      };
+    });
   } catch (error) {
     console.error('Error fetching quiz list:', error);
     throw error;

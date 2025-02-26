@@ -41,7 +41,7 @@ const QuizSelection = () => {
       <div className="quiz-selection">
         <div className="header-section">
           <h1>Available Quizzes</h1>
-          <p>Select a quiz to get started</p>
+          <p>Choose a quiz from our collection and test your knowledge</p>
         </div>
 
         <div className="search-box">
@@ -56,7 +56,7 @@ const QuizSelection = () => {
 
         {filteredQuizzes.length === 0 ? (
           <div className="no-quizzes">
-            <p>No quizzes found.</p>
+            <p>No quizzes matching your search. Try a different term or check back later!</p>
           </div>
         ) : (
           <div className="quiz-grid">
@@ -64,6 +64,9 @@ const QuizSelection = () => {
               <div key={quiz.fileName} className="quiz-card">
                 <div className="quiz-card-header">
                   <h3>{quiz.title}</h3>
+                  <div className="quiz-uploader">
+                    Uploaded by: {quiz.uploaderName}
+                  </div>
                 </div>
                 <Link 
                   to={`/quiz/${encodeURIComponent(quiz.fileName)}`} 
