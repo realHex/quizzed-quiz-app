@@ -114,3 +114,45 @@ const processQuizData = (csvData) => {
     return question;
   });
 };
+
+export const getQuizMetadata = async (quizName) => {
+  // In a real application, you would fetch this data from an API
+  // For now, we'll return mock data
+  try {
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // You can expand this mock data as needed
+    const mockMetadata = {
+      'JavaScript Basics.csv': {
+        description: 'Test your knowledge of JavaScript fundamentals including variables, functions, and control flow.',
+        questions: 10,
+        difficulty: 'easy',
+        timeEstimate: '10 min',
+        category: 'Programming',
+        lastAttempt: null
+      },
+      'Advanced CSS.csv': {
+        description: 'Challenge yourself with advanced CSS concepts like flexbox, grid, and animations.',
+        questions: 15,
+        difficulty: 'medium',
+        timeEstimate: '15 min',
+        category: 'Web Design',
+        lastAttempt: '2023-10-15'
+      },
+      // Add more metadata for other quizzes
+    };
+    
+    return mockMetadata[quizName] || {
+      description: 'Take this quiz to test your knowledge.',
+      questions: '?',
+      difficulty: 'medium',
+      timeEstimate: '?',
+      category: 'General',
+      lastAttempt: null
+    };
+  } catch (error) {
+    console.error("Error fetching quiz metadata:", error);
+    return null;
+  }
+};
