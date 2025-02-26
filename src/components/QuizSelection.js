@@ -3,26 +3,6 @@ import { Link } from 'react-router-dom';
 import { fetchQuizList } from '../utils/quizService';
 import '../styles/QuizSelection.css';
 
-// Mock data for known quizzes only
-const quizMetadata = {
-  'JavaScript Basics.csv': {
-    description: 'Test your knowledge of JavaScript fundamentals including variables, functions, and control flow.',
-    questions: 10,
-    difficulty: 'easy',
-    timeEstimate: '10 min',
-    category: 'Programming',
-    lastAttempt: null
-  },
-  'Advanced CSS.csv': {
-    description: 'Challenge yourself with advanced CSS concepts like flexbox, grid, and animations.',
-    questions: 15,
-    difficulty: 'medium',
-    timeEstimate: '15 min',
-    category: 'Web Design',
-    lastAttempt: '2023-10-15'
-  }
-};
-
 const QuizSelection = () => {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,16 +17,8 @@ const QuizSelection = () => {
         setQuizzes(availableQuizzes);
         
         // Extract unique categories
-        const categoriesSet = new Set();
-        availableQuizzes.forEach(quiz => {
-          const quizName = quiz.replace('.csv', '');
-          const metadata = quizMetadata[quiz];
-          if (metadata && metadata.category) {
-            categoriesSet.add(metadata.category);
-          }
-        });
+        const categoriesSet = new Set(availableQuizzes.map(quiz => quiz.category));
         setCategories(Array.from(categoriesSet));
-        
       } catch (error) {
         console.error("Failed to load quizzes:", error);
       } finally {
@@ -57,27 +29,19 @@ const QuizSelection = () => {
     loadQuizzes();
   }, []);
 
-  // Filter quizzes based on search term and active filter
   const filteredQuizzes = quizzes.filter(quiz => {
-    const quizName = quiz.replace('.csv', '').toLowerCase();
-    const matchesSearch = quizName.includes(searchTerm.toLowerCase());
-    const metadata = quizMetadata[quiz];
+    const matchesSearch = quiz.title.toLowerCase().includes(searchTerm.toLowerCase());
     
     if (activeFilter === 'all') {
       return matchesSearch;
     } else if (activeFilter === 'incomplete') {
-      return matchesSearch && (!metadata || !metadata.lastAttempt);
+      return matchesSearch && !quiz.lastAttempt;
     } else if (activeFilter === 'completed') {
-      return matchesSearch && metadata && metadata.lastAttempt;
+      return matchesSearch && quiz.lastAttempt;
     } else {
-      // Filter by category
-      return matchesSearch && metadata && metadata.category === activeFilter;
+      return matchesSearch && quiz.category === activeFilter;
     }
   });
-
-  const getQuizMetadata = (quiz) => {
-    return quizMetadata[quiz] || null;
-  };
 
   if (loading) {
     return (
@@ -139,59 +103,42 @@ const QuizSelection = () => {
 
         {filteredQuizzes.length === 0 ? (
           <div className="no-quizzes">
-            <p>No quizzes available.</p>
+            <p>No quizzes found.</p>
           </div>
         ) : (
           <div className="quiz-grid">
-            {filteredQuizzes.map((quiz, index) => {
-              const quizName = quiz.replace('.csv', '');
-              const metadata = getQuizMetadata(quiz);
-              
-              return (
-                <div key={index} className="quiz-card">
-                  {metadata ? (
-                    <>
-                      {metadata.category && (
-                        <span className="category-tag">{metadata.category}</span>
-                      )}
-                      <div className="quiz-card-header">
-                        <h3>{quizName}</h3>
-                      </div>
-                      <div className="quiz-card-body">
-                        <p className="quiz-description">{metadata.description}</p>
-                        
-                        <div className="quiz-meta">
-                          <span>{metadata.questions} questions</span>
-                          <span>{metadata.timeEstimate}</span>
-                        </div>
-                        
-                        <div className="quiz-meta">
-                          <span className={`quiz-difficulty difficulty-${metadata.difficulty}`}>
-                            {metadata.difficulty}
-                          </span>
-                          {metadata.lastAttempt && (
-                            <span>Last attempt: {new Date(metadata.lastAttempt).toLocaleDateString()}</span>
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="quiz-card-header">
-                        <h3>{quizName}</h3>
-                      </div>
-                      <div className="quiz-card-body">
-                        <div style={{ flex: 1 }}></div>
-                      </div>
-                    </>
-                  )}
-                  
-                  <Link to={`/quiz/${encodeURIComponent(quiz)}`} className="start-quiz-btn">
-                    Start Quiz
-                  </Link>
+            {filteredQuizzes.map((quiz) => (
+              <div key={quiz.id || quiz.fileName} className="quiz-card">
+                <span className="category-tag">{quiz.category}</span>
+                <div className="quiz-card-header">
+                  <h3>{quiz.title}</h3>
                 </div>
-              );
-            })}
+                <div className="quiz-card-body">
+                  <p className="quiz-description">{quiz.description}</p>
+                  
+                  <div className="quiz-meta">
+                    <span>{quiz.questionCount} questions</span>
+                    <span>{quiz.timeEstimate}</span>
+                  </div>
+                  
+                  <div className="quiz-meta">
+                    <span className={`quiz-difficulty difficulty-${quiz.difficulty}`}>
+                      {quiz.difficulty}
+                    </span>
+                    {quiz.lastAttempt && (
+                      <span>Last attempt: {new Date(quiz.lastAttempt).toLocaleDateString()}</span>
+                    )}
+                  </div>
+                </div>
+                
+                <Link 
+                  to={`/quiz/${encodeURIComponent(quiz.fileName)}`} 
+                  className="start-quiz-btn"
+                >
+                  Start Quiz
+                </Link>
+              </div>
+            ))}
           </div>
         )}
       </div>

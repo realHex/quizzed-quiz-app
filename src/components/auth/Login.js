@@ -1,80 +1,71 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../../utils/supabase';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
-  const { user } = useAuth();
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
+    const { signIn } = useAuth();
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user) {
-      navigate('/');
-    }
-  }, [user, navigate]);
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError('');
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      
-      if (error) throw error;
-      navigate('/quiz-selection');  // This will now redirect to QuizSelection
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+        try {
+            await signIn(email, password);
+            navigate('/'); // Changed from '/quiz-selection' to '/'
+        } catch (err) {
+            console.error('Login error:', err);
+            setError('Failed to sign in. Please check your credentials.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
-  return (
-    <div className="auth-container">
-      <h2>Welcome Back</h2>
-      {error && <div className="error-message">{error}</div>}
-      
-      <form onSubmit={handleLogin}>
-        <div className="form-group">
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+    return (
+        <div className="auth-container">
+            <div className="auth-form-container">
+                <h2>Log In</h2>
+                {error && <p className="error-message">{error}</p>}
+                <form onSubmit={handleSubmit} className="auth-form">
+                    <div className="form-group">
+                        <label htmlFor="email">Email</label>
+                        <input
+                            type="email"
+                            id="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="password">Password</label>
+                        <input
+                            type="password"
+                            id="password"
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    <button 
+                        type="submit" 
+                        className="auth-button"
+                        disabled={loading}
+                    >
+                        {loading ? 'Logging in...' : 'Log In'}
+                    </button>
+                </form>
+                <p className="auth-redirect">
+                    Don't have an account? <Link to="/signup">Sign up</Link>
+                </p>
+            </div>
         </div>
-        
-        <div className="form-group">
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
-        
-        <button type="submit" disabled={loading} className="auth-button">
-          {loading ? 'Logging in...' : 'Login'}
-        </button>
-      </form>
-      
-      <p className="auth-switch">
-        Don't have an account? <Link to="/signup">Sign Up</Link>
-      </p>
-    </div>
-  );
+    );
 };
 
 export default Login;

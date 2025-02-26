@@ -6,9 +6,11 @@ import Header from './components/layout/Header';
 import Login from './components/auth/Login';
 import Signup from './components/auth/Signup';
 import QuizSelection from './components/QuizSelection';
+import Quiz from './components/Quiz';
 import History from './components/History';
 import './App.css';
-import './styles/History.css';
+import './styles/QuizSelection.css';
+import './styles/Quiz.css';
 
 function App() {
   return (
@@ -29,6 +31,14 @@ function App() {
                 } 
               />
               <Route 
+                path="/quiz/:quizName" 
+                element={
+                  <PrivateRoute>
+                    <Quiz />
+                  </PrivateRoute>
+                } 
+              />
+              <Route 
                 path="/history" 
                 element={
                   <PrivateRoute>
@@ -36,7 +46,6 @@ function App() {
                   </PrivateRoute>
                 } 
               />
-              {/* Add other protected routes as needed */}
             </Routes>
           </main>
         </div>

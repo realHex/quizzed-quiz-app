@@ -1,3 +1,4 @@
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -16,7 +17,7 @@ const Header = () => {
               <Link to="/">Quiz App</Link>
             </div>
             {user && (
-              <nav>
+              <nav className="nav-links">
                 <Link to="/" className="nav-link">Quizzes</Link>
                 <Link to="/history" className="nav-link">History</Link>
               </nav>

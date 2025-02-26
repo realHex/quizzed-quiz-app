@@ -1,7 +1,11 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '../utils/supabase';
 
 const AuthContext = createContext();
+
+export function useAuth() {
+  return useContext(AuthContext);
+}
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
@@ -9,69 +13,101 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for existing session on load
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setUser(session?.user || null);
-      
-      if (session?.user) {
-        fetchUserProfile(session.user.id);
-      }
-      setLoading(false);
-    };
+    // Check active sessions and set the user
+    const session = supabase.auth.getSession();
+    setUser(session?.user || null);
     
-    checkSession();
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+    const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setUser(session?.user || null);
-        
-        if (session?.user) {
-          fetchUserProfile(session.user.id);
-        } else {
-          setUserProfile(null);
-        }
         setLoading(false);
       }
     );
 
-    return () => subscription.unsubscribe();
+    // Cleanup subscription
+    return () => {
+      if (authListener?.subscription) {
+        authListener.subscription.unsubscribe();
+      }
+    };
   }, []);
 
-  const fetchUserProfile = async (userId) => {
-    // Get user profile data from the profiles table
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('name, email')
-      .eq('id', userId)
-      .single();
+  // Fetch user profile when user changes
+  useEffect(() => {
+    async function fetchUserProfile() {
+      if (user) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
 
-    if (error) {
-      console.error('Error fetching user data:', error);
-    } else {
-      setUserProfile(data);
+        if (!error && data) {
+          setUserProfile(data);
+        }
+      } else {
+        setUserProfile(null);
+      }
     }
+
+    fetchUserProfile();
+  }, [user]);
+
+  // Sign in function
+  const signIn = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ 
+      email, 
+      password 
+    });
+    
+    if (error) throw error;
+    return data;
   };
 
+  // Sign up function
+  const signUp = async (email, password, name) => {
+    const { data, error } = await supabase.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data: {
+          name: name
+        }
+      }
+    });
+    
+    if (error) throw error;
+    
+    // Create a profile for the user
+    if (data.user) {
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([{ id: data.user.id, name: name }]);
+      
+      if (profileError) throw profileError;
+    }
+    
+    return data;
+  };
+
+  // Sign out function
   const signOut = async () => {
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
   };
 
   const value = {
     user,
     userProfile,
-    loading,
+    signIn,
+    signUp,
     signOut,
+    loading
   };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
-  }
-  return context;
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };

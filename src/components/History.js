@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../utils/supabase';
 import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const History = () => {
   const [attempts, setAttempts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchAttempts();
@@ -26,6 +28,10 @@ const History = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBackToQuizzes = () => {
+    navigate('/'); // Navigate to the root path, not "/quiz-selection"
   };
 
   if (loading) return <div>Loading history...</div>;
@@ -49,6 +55,9 @@ const History = () => {
           ))
         )}
       </div>
+      <button onClick={handleBackToQuizzes} className="back-btn">
+        Back to Quizzes
+      </button>
     </div>
   );
 };
