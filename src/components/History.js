@@ -31,7 +31,7 @@ const History = () => {
   };
 
   const handleBackToQuizzes = () => {
-    navigate('/'); // Navigate to the root path, not "/quiz-selection"
+    navigate('/');
   };
 
   if (loading) return <div>Loading history...</div>;
@@ -48,7 +48,8 @@ const History = () => {
               <h3>{attempt.quiz_name}</h3>
               <div className="attempt-details">
                 <p>Score: {attempt.score}%</p>
-                <p>Time: {attempt.time} seconds</p>
+                <p>Questions: {attempt.questions || 'N/A'}</p>
+                <p>Time: {attempt.time || 'N/A'}</p>
                 <p>Date: {new Date(attempt.created_at).toLocaleDateString()}</p>
               </div>
             </div>

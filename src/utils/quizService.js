@@ -48,11 +48,13 @@ export const fetchQuizContent = async (quizName) => {
 export const saveQuizAttempt = async (attemptData) => {
   try {
     const { data, error } = await supabase
-      .from('attempts')  // Changed from quiz_attempts to attempts
+      .from('attempts')
       .insert([{
         user_id: attemptData.user_id,
         quiz_name: attemptData.quiz_name,
-        score: attemptData.score
+        score: attemptData.score,
+        time: attemptData.time,          // Add time field (formatted as MM:SS)
+        questions: attemptData.questions  // Add questions field (e.g., "5/10")
         // created_at is handled automatically by Supabase
       }]);
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { saveQuizAttempt, fetchQuizContent } from '../utils/quizService';
@@ -12,14 +12,35 @@ const Quiz = () => {
     const [showFeedback, setShowFeedback] = useState(false);
     const [quizCompleted, setQuizCompleted] = useState(false);
     const [finalScore, setFinalScore] = useState(0);
+    const [correctCount, setCorrectCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [quizStartTime, setQuizStartTime] = useState(null);
     const [totalTime, setTotalTime] = useState(0);
+    const [elapsedTime, setElapsedTime] = useState(0);
     
     const { quizName } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+
+    // Format seconds into MM:SS format
+    const formatTime = useCallback((seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }, []);
+
+    // Timer effect
+    useEffect(() => {
+        if (quizStartTime && !quizCompleted && !loading) {
+            const timer = setInterval(() => {
+                const elapsed = Math.floor((Date.now() - quizStartTime) / 1000);
+                setElapsedTime(elapsed);
+            }, 1000);
+
+            return () => clearInterval(timer);
+        }
+    }, [quizStartTime, quizCompleted, loading]);
 
     useEffect(() => {
         const loadQuiz = async () => {
@@ -53,6 +74,7 @@ const Quiz = () => {
             }
         });
         
+        setCorrectCount(correct);
         return Math.round((correct / questions.length) * 100);
     };
 
@@ -77,17 +99,29 @@ const Quiz = () => {
 
     const handleQuizSubmit = async () => {
         const timeSpent = Math.round((Date.now() - quizStartTime) / 1000);
-        const score = calculateScore();
+        
+        // Calculate score and get correct answers count directly
+        let correct = 0;
+        questions.forEach((question, index) => {
+            if (isAnswerCorrect(question, userAnswers[index])) {
+                correct++;
+            }
+        });
+        
+        const score = Math.round((correct / questions.length) * 100);
         setLoading(true);
 
         try {
             await saveQuizAttempt({
                 user_id: user.id,
                 quiz_name: quizName.replace('.csv', ''),
-                score: score
-                // No time field in the attempts table
+                score: score,
+                time: formatTime(timeSpent),
+                questions: `${correct}/${questions.length}`
             });
 
+            // Update state after successful save
+            setCorrectCount(correct);
             setQuizCompleted(true);
             setFinalScore(score);
             setTotalTime(timeSpent);
@@ -250,7 +284,8 @@ const Quiz = () => {
                     <h2>Quiz Completed!</h2>
                     <div className="results-details">
                         <p>Final Score: {finalScore}%</p>
-                        <p>Time Taken: {totalTime} seconds</p>
+                        <p>Questions: {correctCount}/{questions.length}</p>
+                        <p>Time Taken: {formatTime(totalTime)}</p>
                     </div>
                     <div className="results-actions">
                         <button onClick={() => navigate('/history')} className="view-history-btn">
@@ -266,7 +301,8 @@ const Quiz = () => {
                     <div className="quiz-header">
                         <h2>{decodeURIComponent(quizName).replace('.csv', '')}</h2>
                         <div className="quiz-progress">
-                            Question {currentQuestion + 1} of {questions.length}
+                            <div>Question {currentQuestion + 1} of {questions.length}</div>
+                            <div className="quiz-timer">Time: {formatTime(elapsedTime)}</div>
                         </div>
                     </div>
 
