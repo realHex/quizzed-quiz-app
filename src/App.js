@@ -5,7 +5,7 @@ import PrivateRoute from './components/auth/PrivateRoute';
 import Header from './components/layout/Header';
 import Login from './components/auth/Login';
 import Signup from './components/auth/Signup';
-import Home from './components/Home'; // Your existing Home component
+import QuizSelection from './components/QuizSelection';
 import './App.css';
 
 function App() {
@@ -22,7 +22,7 @@ function App() {
                 path="/" 
                 element={
                   <PrivateRoute>
-                    <Home />
+                    <QuizSelection />
                   </PrivateRoute>
                 } 
               />

@@ -29,7 +29,7 @@ const Login = () => {
       });
       
       if (error) throw error;
-      navigate('/');
+      navigate('/quiz-selection');  // This will now redirect to QuizSelection
     } catch (error) {
       setError(error.message);
     } finally {

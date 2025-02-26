@@ -1,79 +1,128 @@
 .auth-container {
-  max-width: 400px;
-  margin: 40px auto;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  max-width: 450px;
+  margin: 60px auto;
+  padding: 40px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, #ffffff, #f5f5f5);
+  box-shadow: 
+    0 10px 25px rgba(0, 0, 0, 0.05),
+    0 5px 10px rgba(0, 0, 0, 0.02);
 }
 
 .auth-container h2 {
-  margin-bottom: 20px;
+  margin-bottom: 30px;
   text-align: center;
+  font-size: 2rem;
+  color: #2c3e50;
+  font-weight: 600;
 }
 
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 24px;
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
   font-weight: 500;
+  color: #4a5568;
+  font-size: 0.95rem;
 }
 
 .form-group input {
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 12px 16px;
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+  background: #ffffff;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.15);
 }
 
 .error-message {
-  background-color: #ffebee;
-  color: #c62828;
-  padding: 10px;
-  border-radius: 4px;
-  margin-bottom: 15px;
+  background-color: #fff5f5;
+  color: #e53e3e;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 1px solid #feb2b2;
+  font-size: 0.9rem;
 }
 
 button {
   width: 100%;
-  padding: 10px;
-  background-color: #4caf50;
+  padding: 12px;
+  background: linear-gradient(45deg, #4299e1, #667eea);
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
 }
 
 button:disabled {
-  background-color: #cccccc;
+  background: #cbd5e0;
   cursor: not-allowed;
+  transform: none;
 }
 
 .app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 20px;
-  background-color: #f8f9fa;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 20px 40px;
+  background: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
 }
 
 .welcome-message {
-  margin-right: 15px;
+  color: #2d3748;
   font-weight: 500;
 }
 
 .logout-button {
-  width: auto;
-  padding: 6px 12px;
-  background-color: #f44336;
+  padding: 8px 16px;
+  background: linear-gradient(45deg, #f56565, #e53e3e);
+  font-size: 0.9rem;
+  margin-left: 15px;
 }
 
 .auth-links a {
-  margin-left: 15px;
+  margin-left: 20px;
   text-decoration: none;
-  color: #2196f3;
+  color: #4299e1;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.auth-links a:hover {
+  color: #2b6cb0;
+}
+
+.auth-container p {
+  margin-top: 24px;
+  text-align: center;
+  color: #4a5568;
+}
+
+.auth-container p a {
+  color: #4299e1;
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 5px;
+  transition: color 0.2s ease;
+}
+
+.auth-container p a:hover {
+  color: #2b6cb0;
 }

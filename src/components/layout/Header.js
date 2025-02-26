@@ -11,7 +11,9 @@ const Header = () => {
       </div>
       
       <nav>
-        {/* Add navigation links here */}
+        {user && (
+          <Link to="/" className="nav-link">Quizzes</Link>
+        )}
       </nav>
       
       <div className="user-section">
