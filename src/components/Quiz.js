@@ -312,6 +312,7 @@ const Quiz = () => {
                         <button
                             onClick={handlePreviousQuestion}
                             disabled={currentQuestion === 0}
+                            className="nav-button prev-button"
                         >
                             Previous
                         </button>
@@ -319,7 +320,7 @@ const Quiz = () => {
                         {currentQuestion === questions.length - 1 && answeredQuestions[currentQuestion] && !showFeedback ? (
                             <button 
                                 onClick={handleQuizSubmit} 
-                                className="submit-quiz-btn"
+                                className="nav-button submit-quiz-btn"
                             >
                                 Submit Quiz
                             </button>
@@ -327,6 +328,7 @@ const Quiz = () => {
                             <button
                                 onClick={handleNextQuestion}
                                 disabled={!isQuestionAnswered() && !showFeedback}
+                                className="nav-button next-button"
                             >
                                 {showFeedback ? 'Next' : 'Check Answer'}
                             </button>

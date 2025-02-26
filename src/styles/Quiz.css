@@ -214,6 +214,8 @@
     display: flex;
     justify-content: space-between;
     margin: 24px 0;
+    gap: 15px;
+    margin-top: 30px;
 }
 
 .navigation-controls button {
@@ -229,6 +231,34 @@
 .navigation-controls button:disabled {
     background: #cbd5e0;
     cursor: not-allowed;
+}
+
+.nav-button {
+    min-width: 120px;
+    padding: 12px 20px;
+    font-size: 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    border: none;
+    background-color: #4299e1;
+    color: white;
+    flex: 1; /* Make buttons equal width */
+    max-width: 200px; /* Prevent buttons from getting too wide */
+}
+
+.nav-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.prev-button {
+    background-color: #718096;
+}
+
+.submit-quiz-btn {
+    background-color: #48bb78;
 }
 
 .loading {
