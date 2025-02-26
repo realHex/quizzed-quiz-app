@@ -115,3 +115,25 @@
 .loading {
   color: #666;
 }
+
+.quiz-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.abandon-quiz {
+  color: #e74c3c;
+  text-decoration: none;
+  font-size: 14px;
+  padding: 8px 16px;
+  border: 1px solid #e74c3c;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+}
+
+.abandon-quiz:hover {
+  background-color: #e74c3c;
+  color: white;
+}

@@ -1,41 +1,26 @@
 import Papa from 'papaparse';
 
-// Fetch available quizzes from the server
 export const fetchAvailableQuizzes = async () => {
   try {
-    const response = await fetch('/api/quizzes');
-    if (!response.ok) {
-      throw new Error('Failed to fetch quizzes');
-    }
-    return await response.json();
+    // Return only the example quiz that exists in public folder
+    return ['Example Quiz.csv'];
   } catch (error) {
     console.error('Error fetching quizzes:', error);
-    // For development, return mock data
-    return ['Example Quiz.csv', 'JavaScript Basics.csv', 'React Fundamentals.csv'];
+    return [];
   }
 };
 
-// Parse CSV data into quiz questions
 export const parseQuizData = async (quizName) => {
   try {
-    // In a real app, this would be an API call to fetch the CSV data
-    const response = await fetch(`/api/quiz/${quizName}`);
+    const response = await fetch(`/quizes/${quizName}`);
     if (!response.ok) {
       throw new Error('Failed to fetch quiz data');
     }
     
     const csvData = await response.text();
-    
     return processQuizData(csvData);
   } catch (error) {
     console.error('Error fetching quiz data:', error);
-    
-    // For development, use the Example Quiz data if requested
-    if (quizName === 'Example%20Quiz.csv') {
-      const mockCsvData = await mockFetchExampleQuiz();
-      return processQuizData(mockCsvData);
-    }
-    
     throw error;
   }
 };
@@ -44,47 +29,88 @@ export const parseQuizData = async (quizName) => {
 const processQuizData = (csvData) => {
   const result = Papa.parse(csvData, {
     header: true,
-    skipEmptyLines: true
+    skipEmptyLines: true,
+    transform: (value) => value?.trim() || '',  // Handle null/undefined values
   });
 
   if (result.errors.length > 0) {
-    console.error('CSV parsing errors:', result.errors);
+    console.warn('CSV parsing warnings:', result.errors);
+  }
+
+  // Validate required columns
+  const requiredColumns = ['Type', 'Question', 'Correct'];
+  const missingColumns = requiredColumns.filter(col => !result.meta.fields.includes(col));
+  
+  if (missingColumns.length > 0) {
+    throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
   }
 
   return result.data.map((row, index) => {
+    // Validate question type
+    if (!['MCQ', 'MULTI', 'YESNO'].includes(row.Type)) {
+      throw new Error(`Invalid question type "${row.Type}" at question ${index + 1}`);
+    }
+
+    // Basic question structure
     const question = {
       id: index,
       type: row.Type,
-      text: row.Question,
+      text: row.Question?.trim(),
       options: [],
-      correctAnswer: row.Correct
+      correctAnswer: row.Correct?.trim()
     };
 
-    // Add options based on question type
+    // Validate question text
+    if (!question.text) {
+      throw new Error(`Empty question text at question ${index + 1}`);
+    }
+
+    // Handle different question types
     if (question.type === 'MCQ' || question.type === 'MULTI') {
-      question.options = [
-        row.Option1,
-        row.Option2,
-        row.Option3,
-        row.Option4
-      ].filter(option => option); // Filter out empty options
+      // Collect non-empty options
+      const options = [row.Option1, row.Option2, row.Option3, row.Option4]
+        .map(opt => opt?.trim())
+        .filter(Boolean);
+      
+      if (options.length < 2) {
+        throw new Error(`Question ${index + 1} requires at least 2 options`);
+      }
+      
+      question.options = options;
+      
+      if (!question.correctAnswer) {
+        throw new Error(`Missing correct answer for question ${index + 1}`);
+      }
+
+      if (question.type === 'MCQ') {
+        const correctNum = parseInt(question.correctAnswer);
+        if (isNaN(correctNum) || correctNum < 1 || correctNum > options.length) {
+          throw new Error(`Invalid correct answer for MCQ question ${index + 1}`);
+        }
+      } else { // MULTI
+        const correctAnswers = question.correctAnswer.split(';')
+          .map(num => num.trim())
+          .map(num => parseInt(num))
+          .filter(num => !isNaN(num));
+          
+        if (correctAnswers.length === 0 || 
+            correctAnswers.some(num => num < 1 || num > options.length)) {
+          throw new Error(`Invalid correct answer for MULTI question ${index + 1}`);
+        }
+        question.correctAnswer = correctAnswers.join(';');
+      }
+    } else { // YESNO
+      if (!question.correctAnswer) {
+        throw new Error(`Missing correct answer for question ${index + 1}`);
+      }
+      
+      const answer = question.correctAnswer.toLowerCase();
+      if (answer !== 'yes' && answer !== 'no') {
+        throw new Error(`Invalid answer for YES/NO question ${index + 1}. Must be 'yes' or 'no'`);
+      }
+      question.correctAnswer = answer;
     }
 
     return question;
   });
-};
-
-// Mock function for development to return Example Quiz data
-const mockFetchExampleQuiz = async () => {
-  return `Type,Question,Option1,Option2,Option3,Option4,Correct
-YESNO,"Is Python case-sensitive?",,,,yes
-MCQ,"Which language is used for web development?",Python,HTML,C++,Java,2
-MULTI,"Which are programming languages?",Python,HTML,C++,CSS,1;3
-YESNO,"Is JavaScript the same as Java?",,,,no
-MCQ,"What does HTML stand for?",HyperText Markup Language,HighText Machine Language,Hyperlink and Text Markup Language,Home Tool Markup Language,1
-MULTI,"Which are markup languages?",HTML,CSS,XML,Python,1;3
-YESNO,"Is CSS used for styling web pages?",,,,yes
-MCQ,"Which company developed Java?",Microsoft,Sun Microsystems,Apple,Google,2
-MULTI,"Which are valid data types in Python?",int,float,list,file,1;2;3
-YESNO,"Is Python open-source?",,,,yes`;
 };

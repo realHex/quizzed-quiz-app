@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import { parseQuizData } from '../services/quizService';
 import QuestionYesNo from './questions/QuestionYesNo';
 import QuestionMCQ from './questions/QuestionMCQ';
@@ -56,27 +56,35 @@ const QuizAttempt = () => {
     
     questions.forEach(question => {
       const userAnswer = answers[question.id];
+      const correctAnswer = question.correctAnswer;
       
+      // Skip if answer is undefined or empty
+      if (!userAnswer || (Array.isArray(userAnswer) && userAnswer.length === 0)) {
+        return;
+      }
+
       switch(question.type) {
         case 'YESNO':
-          if (userAnswer.toLowerCase() === question.correctAnswer.toLowerCase()) {
+          if (userAnswer && correctAnswer && 
+              userAnswer.toString().toLowerCase() === correctAnswer.toString().toLowerCase()) {
             correctCount++;
           }
           break;
         case 'MCQ':
-          if (userAnswer === question.correctAnswer) {
+          if (userAnswer && correctAnswer && userAnswer === correctAnswer) {
             correctCount++;
           }
           break;
         case 'MULTI':
-          const correctAnswersArray = question.correctAnswer.split(';');
-          const correctSet = new Set(correctAnswersArray);
-          const userSet = new Set(userAnswer);
-          
-          // Check if sets are equal (same elements, same size)
-          if (correctSet.size === userSet.size && 
-              [...correctSet].every(value => userSet.has(value))) {
-            correctCount++;
+          if (Array.isArray(userAnswer) && userAnswer.length > 0 && correctAnswer) {
+            const correctAnswersArray = correctAnswer.split(';');
+            const correctSet = new Set(correctAnswersArray);
+            const userSet = new Set(userAnswer);
+            
+            if (correctSet.size === userSet.size && 
+                [...correctSet].every(value => userSet.has(value))) {
+              correctCount++;
+            }
           }
           break;
         default:
@@ -115,8 +123,11 @@ const QuizAttempt = () => {
     <div className="quiz-attempt">
       <h2>{decodeURIComponent(quizName).replace('.csv', '')}</h2>
       
-      <div className="quiz-progress">
-        Question {currentQuestionIndex + 1} of {questions.length}
+      <div className="quiz-header">
+        <div className="quiz-progress">
+          Question {currentQuestionIndex + 1} of {questions.length}
+        </div>
+        <Link to="/" className="abandon-quiz">Return to Menu</Link>
       </div>
       
       <div className="question-container">
