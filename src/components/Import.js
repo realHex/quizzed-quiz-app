@@ -34,26 +34,65 @@ const Import = () => {
     setSuccess(false);
 
     try {
-      // Upload file to Supabase storage
+      // Get the base filename without extension
+      const fileName = file.name;
+      const baseName = fileName.substring(0, fileName.lastIndexOf('.'));
+      const extension = fileName.substring(fileName.lastIndexOf('.'));
+      
+      // Check if file exists and find available name
+      let finalFileName = fileName;
+      let counter = 1;
+      let fileExists = true;
+      
+      while (fileExists) {
+        // Check if file exists in storage
+        const { data } = await supabase.storage
+          .from('quizes')
+          .list('', {
+            search: finalFileName
+          });
+        
+        // If no matching files or empty result, break the loop
+        if (!data || data.length === 0) {
+          fileExists = false;
+          break;
+        }
+        
+        // Check if the exact filename exists
+        const exactMatch = data.find(item => item.name === finalFileName);
+        
+        if (!exactMatch) {
+          // If no exact match found, the filename is available
+          fileExists = false;
+          break;
+        }
+        
+        // Create a new filename with incrementing counter
+        finalFileName = `${baseName} (${counter})${extension}`;
+        counter++;
+      }
+
+      // Upload file to Supabase storage with possibly modified name
       const { error: uploadError } = await supabase.storage
         .from('quizes')
-        .upload(file.name, file, {
+        .upload(finalFileName, file, {
           cacheControl: '3600',
-          upsert: true // Overwrite if file with same name exists
+          upsert: false // Don't overwrite, we've ensured the name is unique
         });
 
       if (uploadError) throw uploadError;
 
-      // Create record in the imports table
+      // Create record in the imports table with the final filename
       const { error: dbError } = await supabase
         .from('imports')
         .insert([{
-          user: user.id,  // Changed from user_id to user
-          quiz_name: file.name
+          user: user.id,
+          quiz_name: finalFileName
         }]);
 
       if (dbError) throw dbError;
 
+      console.log(`File uploaded successfully as: ${finalFileName}`);
       setSuccess(true);
       setFile(null);
       // Reset the file input
