@@ -488,7 +488,7 @@ const Import = () => {
                   <pre>
                     Type,Question,Option1,Option2,Option3,Option4,Correct<br />
                     MCQ,"What is 2+2?","3","4","5","6",2<br />
-                    YESNO,"Is the sky blue?",,,,yes<br />
+                    YESNO,"Is the sky blue?",,,,,yes<br />
                     MULTI,"Select all prime numbers","2","3","4","5","1;2;4"
                   </pre>
                 </div>
