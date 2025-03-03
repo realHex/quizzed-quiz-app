@@ -17,6 +17,9 @@ const Import = () => {
   const [importMode, setImportMode] = useState('file'); // 'file' or 'manual'
   const [csvText, setCsvText] = useState('');
   const [csvName, setCsvName] = useState('');
+  const [quizTag, setQuizTag] = useState(''); // New state for tag
+  const [editingTag, setEditingTag] = useState(null); // State for tracking which import is being edited
+  const [newTagValue, setNewTagValue] = useState(''); // State for the new tag value being edited
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -64,10 +67,72 @@ const Import = () => {
     setCsvName(e.target.value);
   };
 
+  const handleTagChange = (e) => {
+    setQuizTag(e.target.value);
+  };
+
   const handleModeToggle = (mode) => {
     setImportMode(mode);
     setError(null);
     setSuccess(false);
+  };
+
+  const startEditTag = (importItem) => {
+    setEditingTag(importItem.id);
+    setNewTagValue(importItem.tag || '');
+  };
+
+  const cancelEditTag = () => {
+    setEditingTag(null);
+    setNewTagValue('');
+  };
+
+  const saveTagEdit = async (importId) => {
+    try {
+      // Show loading state
+      setError(null);
+      
+      // Verify this is the user's import before updating
+      const { data: importData, error: fetchError } = await supabase
+        .from('imports')
+        .select('*')
+        .eq('id', importId)
+        .single();
+      
+      if (fetchError) throw fetchError;
+      
+      // Check if the import belongs to the logged-in user
+      if (importData.user !== user.id) {
+        throw new Error('You can only edit tags for your own imports');
+      }
+      
+      // Perform the update operation
+      const { error: updateError } = await supabase
+        .from('imports')
+        .update({ tag: newTagValue.trim() || null })
+        .eq('id', importId)
+        .eq('user', user.id); // Add this to ensure user can only edit their own imports
+        
+      // No .select() as it might not be returning properly
+      
+      if (updateError) throw updateError;
+      
+      console.log('Tag updated successfully!');
+      
+      // Update the local state directly - more reliable than relying on return data
+      setUserImports(prevImports => 
+        prevImports.map(item => 
+          item.id === importId ? { ...item, tag: newTagValue.trim() || null } : item
+        )
+      );
+      
+      // Reset editing state
+      setEditingTag(null);
+      setNewTagValue('');
+    } catch (err) {
+      console.error('Error updating tag:', err);
+      setError(`Failed to update tag: ${err.message}`);
+    }
   };
 
   const processManualCsv = async () => {
@@ -135,12 +200,13 @@ const Import = () => {
 
       if (uploadError) throw uploadError;
 
-      // Create record in the imports table
+      // Create record in the imports table with tag
       const { error: dbError } = await supabase
         .from('imports')
         .insert([{
           user: user.id,
-          quiz_name: finalFileName
+          quiz_name: finalFileName,
+          tag: quizTag.trim() || null // Include tag if provided
         }]);
 
       if (dbError) throw dbError;
@@ -149,6 +215,7 @@ const Import = () => {
       setSuccess(true);
       setCsvText('');
       setCsvName('');
+      setQuizTag('');
       fetchUserImports();
     } catch (err) {
       console.error('Upload error:', err);
@@ -217,12 +284,13 @@ const Import = () => {
 
       if (uploadError) throw uploadError;
 
-      // Create record in the imports table with the final filename
+      // Create record in the imports table with the final filename and tag
       const { error: dbError } = await supabase
         .from('imports')
         .insert([{
           user: user.id,
-          quiz_name: finalFileName
+          quiz_name: finalFileName,
+          tag: quizTag.trim() || null // Include tag if provided
         }]);
 
       if (dbError) throw dbError;
@@ -230,6 +298,7 @@ const Import = () => {
       console.log(`File uploaded successfully as: ${finalFileName}`);
       setSuccess(true);
       setFile(null);
+      setQuizTag('');
       // Reset the file input
       document.getElementById('file-upload').value = '';
       
@@ -246,6 +315,7 @@ const Import = () => {
   const handleTryAgain = () => {
     setError(null);
     setSuccess(false);
+    setQuizTag('');
     
     if (importMode === 'file') {
       setFile(null);
@@ -271,6 +341,11 @@ const Import = () => {
 
   const handleDelete = async (importItem) => {
     try {
+      // Verify this is the user's import
+      if (importItem.user !== user.id) {
+        throw new Error('You can only delete your own imports');
+      }
+      
       // Delete from storage bucket
       const { error: storageError } = await supabase
         .storage
@@ -279,11 +354,12 @@ const Import = () => {
 
       if (storageError) throw storageError;
 
-      // Delete from imports table
+      // Delete from imports table with user verification
       const { error: dbError } = await supabase
         .from('imports')
         .delete()
-        .eq('id', importItem.id);
+        .eq('id', importItem.id)
+        .eq('user', user.id); // Add this to ensure user can only delete their own imports
 
       if (dbError) throw dbError;
 
@@ -421,6 +497,20 @@ const Import = () => {
                     )}
                   </div>
 
+                  {/* Add tag field */}
+                  <div className="tag-input">
+                    <label htmlFor="quiz-tag">Folder Tag (Optional):</label>
+                    <input
+                      type="text"
+                      id="quiz-tag"
+                      value={quizTag}
+                      onChange={handleTagChange}
+                      placeholder="e.g., Math, Science, History..."
+                      disabled={uploading}
+                    />
+                    <small className="tag-hint">Group quizzes by folder tag</small>
+                  </div>
+
                   {error && <div className="error-message">{error}</div>}
 
                   <div className="upload-actions">
@@ -446,6 +536,20 @@ const Import = () => {
                       placeholder="Enter a name for your CSV file"
                       disabled={uploading}
                     />
+                  </div>
+                  
+                  {/* Add tag field */}
+                  <div className="tag-input">
+                    <label htmlFor="manual-quiz-tag">Folder Tag (Optional):</label>
+                    <input
+                      type="text"
+                      id="manual-quiz-tag"
+                      value={quizTag}
+                      onChange={handleTagChange}
+                      placeholder="e.g., Math, Science, History..."
+                      disabled={uploading}
+                    />
+                    <small className="tag-hint">Group quizzes by folder tag</small>
                   </div>
                   
                   <div className="csv-text-input">
@@ -511,7 +615,7 @@ const Import = () => {
           )}
         </div>
 
-        {/* Uploaded files section - shown in both modes */}
+        {/* Uploaded files section with tag editing */}
         <div className="user-imports-section">
           <h3>Your Uploaded Quizzes</h3>
           
@@ -526,6 +630,47 @@ const Import = () => {
                   <div className="import-item-name" title={importItem.quiz_name}>
                     {importItem.quiz_name}
                   </div>
+                  
+                  {/* Tag display/edit area */}
+                  <div className="import-item-tag">
+                    {editingTag === importItem.id ? (
+                      <div className="tag-edit-form">
+                        <input
+                          type="text"
+                          value={newTagValue}
+                          onChange={(e) => setNewTagValue(e.target.value)}
+                          placeholder="Enter folder tag"
+                          className="tag-edit-input"
+                        />
+                        <div className="tag-edit-buttons">
+                          <button 
+                            onClick={() => saveTagEdit(importItem.id)} 
+                            className="save-tag-btn"
+                            title="Save tag"
+                          >
+                            ✓
+                          </button>
+                          <button 
+                            onClick={cancelEditTag} 
+                            className="cancel-tag-btn"
+                            title="Cancel"
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="tag-display" onClick={() => startEditTag(importItem)}>
+                        <span className="tag-label">
+                          {importItem.tag ? `Tag: ${importItem.tag}` : 'Add tag'}
+                        </span>
+                        <button className="edit-tag-btn" title="Edit tag">
+                          ✎
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  
                   <div className="import-item-date">
                     {new Date(importItem.uploaded_at).toLocaleDateString()}
                   </div>

@@ -295,7 +295,6 @@
   color: rgba(255, 255, 255, 0.85);
   text-align: center;
   margin-top: 8px;
-  font-style: italic;
 }
 
 @media (max-width: 768px) {
@@ -374,4 +373,560 @@
   .view-toggle {
     margin: 0;
   }
+}
+
+/* Folder View Styles */
+.view-toggle-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.folder-view {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.folder-card {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 200px;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.folder-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.folder-card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.folder-card p {
+  color: #718096;
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+
+.folders-section, .untagged-section {
+  margin-bottom: 40px;
+}
+
+.folders-section h2, .untagged-section h2 {
+  color: #4a5568;
+  margin-bottom: 20px;
+  font-size: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 10px;
+}
+
+.folder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  position: relative;
+}
+
+.folder-container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.folder-card {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-align: center;
+  position: relative;
+}
+
+.folder-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.folder-icon {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+.folder-card h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #2d3748;
+  word-break: break-word;
+}
+
+.folder-card p {
+  color: #718096;
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+
+.folder-card.expanded {
+  background-color: #edf2f7;
+  border-bottom: 2px solid #4299e1;
+  transform: translateY(-3px);
+}
+
+.folder-contents {
+  background-color: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  border-top: 4px solid #4299e1;
+}
+
+.folder-contents-wrapper {
+  margin-top: 20px;
+  width: 100%;
+  grid-column: 1 / -1;
+}
+
+.folder-content-title {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #2d3748;
+  font-size: 1.2rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 10px;
+}
+
+/* Add a border to connect folder and its contents */
+.folder-container {
+  position: relative;
+  margin-bottom: 20px; /* Add space between folders */
+}
+
+.folder-container::after {
+  display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .folder-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Add these to support the list view and improved folder behavior */
+
+/* Control section layout */
+.control-section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.view-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+@media (min-width: 768px) {
+  .control-section {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .search-box {
+    flex: 1;
+    margin: 0;
+  }
+}
+
+/* Display toggle */
+.display-toggle-container {
+  margin-left: auto;
+}
+
+.display-toggle {
+  display: flex;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.toggle-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* List view styles */
+.quiz-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.quiz-list-item {
+  display: flex;
+  align-items: center;
+  background-color: white;
+  border-radius: 12px;
+  padding: 15px 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  gap: 15px;
+}
+
+.quiz-list-item:hover {
+  transform: translateX(5px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08);
+}
+
+.quiz-list-title {
+  flex: 1;
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.quiz-list-tag {
+  background-color: #edf2f7;
+  color: #4a5568;
+  padding: 5px 10px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+}
+
+.quiz-list-uploader {
+  color: #718096;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+.quiz-list-action {
+  padding: 8px 16px;
+  background: linear-gradient(45deg, #4299e1, #667eea);
+  color: white;
+  border-radius: 8px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: transform 0.2s;
+}
+
+.quiz-list-action:hover {
+  transform: translateY(-2px);
+}
+
+/* Folder list styles */
+.folder-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.folder-list-container {
+  background-color: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.folder-list-header {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  gap: 15px;
+}
+
+.folder-list-header:hover {
+  background-color: #f7fafc;
+}
+
+.folder-list-header.expanded {
+  background-color: #edf2f7;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.folder-list-header h3 {
+  flex: 1;
+  margin: 0;
+  font-weight: 600;
+}
+
+.folder-list-header p {
+  color: #718096;
+  margin: 0 25px 0 0;
+}
+
+.folder-list-contents {
+  padding: 15px;
+  background-color: #f8fafc;
+}
+
+/* Folder toggle icon */
+.folder-toggle-icon {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: bold;
+  color: #4a5568;
+}
+
+/* Fixed folder card styles */
+.folder-card {
+  position: relative;
+}
+
+.folder-container {
+  position: relative;
+  margin-bottom: 20px; /* Add space between folders */
+}
+
+/* Remove the connecting line for improved UI */
+.folder-container::after {
+  display: none;
+}
+
+/* Ensure folder contents are styled properly */
+.folder-contents {
+  margin-top: 15px;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.quiz-card.in-folder {
+  height: 200px; /* Slightly smaller */
+}
+
+.folder-quiz-grid {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+/* Fix alignment of folder contents */
+@media (min-width: 768px) {
+  .folder-contents-wrapper {
+    padding: 0 20px;
+  }
+}
+
+/* Update view controls layout for multiple toggles */
+.view-controls {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-top: 20px;
+  align-items: center; /* Ensure vertical alignment */
+}
+
+/* Style containers for the three toggle pairs */
+.filter-toggle-container,
+.view-toggle-container,
+.display-toggle-container {
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Vertically align */
+  height: 40px; /* Set consistent height */
+}
+
+/* Add style for the filter toggle */
+.filter-toggle,
+.view-toggle,
+.display-toggle {
+  display: flex;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+  height: 100%; /* Full height of container */
+}
+
+/* Make toggle buttons more consistent */
+.toggle-btn {
+  padding: 10px 18px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s, color 0.3s;
+  min-width: 90px; /* Reduced from 100px for better fit */
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  height: 100%; /* Full height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Exception for icon buttons */
+.display-toggle .toggle-btn {
+  min-width: 50px;
+}
+
+.toggle-btn.active {
+  background: linear-gradient(45deg, #4299e1, #3182ce);
+  color: white;
+  font-weight: 600;
+}
+
+.toggle-btn:not(.active):hover {
+  background-color: #e2e8f0;
+}
+
+/* Improve the control section layout */
+.control-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+  background-color: #f8fafc;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 992px) {
+  .control-section {
+    flex-direction: row;
+    align-items: center;
+  }
+  
+  .search-box {
+    flex: 1;
+    max-width: 400px;
+    margin: 0;
+  }
+  
+  .view-controls {
+    margin-top: 0;
+    margin-left: auto;
+    flex-wrap: nowrap; /* Prevent wrapping on wider screens */
+  }
+}
+
+/* Remove visual separators for cleaner look */
+@media (min-width: 992px) {
+  .filter-toggle-container::after,
+  .view-toggle-container::after {
+    display: none;
+  }
+}
+
+.toggle-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* Add space between the toggle groups on mobile */
+@media (max-width: 768px) {
+  .view-controls > div {
+    margin-bottom: 10px;
+  }
+}
+
+/* Fixed toggle alignment styles */
+.view-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+/* Ensure all toggle containers are identical */
+.filter-toggle-container,
+.view-toggle-container,
+.display-toggle-container {
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+/* Make all toggles have identical base styling */
+.filter-toggle,
+.view-toggle,
+.display-toggle {
+  display: flex;
+  height: 40px;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e2e8f0;
+}
+
+/* Standardize buttons */
+.toggle-btn {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s, color 0.3s;
+  min-width: 90px; /* Set minimum width */
+  font-size: 0.95rem;
+}
+
+/* Flatten View button same width as Folders */
+.view-toggle .toggle-btn {
+  min-width: 90px;
+}
+
+/* Special case for display toggle buttons */
+.display-toggle .toggle-btn {
+  min-width: 50px;
+}
+
+/* Adjust layout for desktop view */
+@media (min-width: 992px) {
+  .control-section {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+  }
+  
+  .search-box {
+    margin: 0;
+    max-width: 400px;
+  }
+  
+  .view-controls {
+    margin-top: 0;
+    flex-wrap: nowrap;
+  }
+}
+
+/* Remove any pre-existing margin that might affect alignment */
+.filter-toggle-container,
+.view-toggle-container,
+.display-toggle-container {
+  margin: 0;
 }
