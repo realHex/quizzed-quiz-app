@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import Papa from 'papaparse';
+import { parse } from 'papaparse';
 
 export const fetchQuizList = async (userId = null) => {
   try {
@@ -106,38 +107,102 @@ export const fetchQuizList = async (userId = null) => {
   }
 };
 
+/**
+ * Fetch the quiz content from Supabase storage and parse it
+ * @param {string} quizName - Name of the quiz file (.csv)
+ * @returns {Object} - Contains questions array and metadata
+ */
 export const fetchQuizContent = async (quizName) => {
   try {
-    const { data, error } = await supabase
-      .storage
+    // First, get quiz metadata from the imports table
+    const { data: importData, error: importError } = await supabase
+      .from('imports')
+      .select('*')
+      .eq('quiz_name', quizName)
+      .single();
+
+    if (importError && importError.code !== 'PGRST116') {
+      throw new Error(`Error fetching quiz metadata: ${importError.message}`);
+    }
+    
+    // Now get the CSV file
+    const { data: fileData, error: fileError } = await supabase.storage
       .from('quizes')
       .download(quizName);
 
-    if (error) throw error;
+    if (fileError) {
+      throw new Error(`Error downloading quiz file: ${fileError.message}`);
+    }
 
-    const text = await data.text();
-    return processQuizData(text);
+    // Parse the CSV content
+    const csvText = await fileData.text();
+    const parsed = parse(csvText, { header: true, skipEmptyLines: true });
+    
+    if (parsed.errors.length > 0) {
+      throw new Error(`CSV parsing error: ${parsed.errors[0].message}`);
+    }
+
+    // Process questions
+    const questions = parsed.data.map(row => {
+      // Transform the data based on question type
+      const type = row.Type?.toUpperCase();
+      const question = {
+        type: type,
+        question: row.Question,
+        slide: row.Slide || null, // This can be slide number or text explanation
+        options: []
+      };
+
+      // Handle different question types
+      if (type === 'YESNO') {
+        question.options = ['Yes', 'No'];
+        question.correct = row.Correct?.toLowerCase() === 'yes' ? 'Yes' : 'No';
+      } else if (type === 'MCQ') {
+        question.options = [
+          row.Option1, row.Option2, row.Option3, row.Option4
+        ].filter(Boolean); // Remove empty options
+        
+        // For MCQ, the correct answer is the option index
+        const correctIndex = parseInt(row.Correct, 10) - 1;
+        question.correct = question.options[correctIndex];
+      } else if (type === 'MULTI') {
+        question.options = [
+          row.Option1, row.Option2, row.Option3, row.Option4
+        ].filter(Boolean);
+        
+        // For MULTI, the correct answer is an array of option indices
+        const correctIndices = row.Correct.split(';').map(i => parseInt(i, 10) - 1);
+        question.correctArray = correctIndices;
+        question.correct = correctIndices.map(idx => question.options[idx]);
+      }
+
+      return question;
+    });
+
+    // Prepare metadata object
+    const metadata = {
+      pdf: importData?.pdf || null,
+      tag: importData?.tag || null
+    };
+
+    return { questions, metadata };
   } catch (error) {
     console.error('Error fetching quiz content:', error);
     throw error;
   }
 };
 
+/**
+ * Save a quiz attempt to the database
+ */
 export const saveQuizAttempt = async (attemptData) => {
   try {
-    const { data, error } = await supabase
-      .from('attempts')
-      .insert([{
-        user_id: attemptData.user_id,
-        quiz_name: attemptData.quiz_name,
-        score: attemptData.score,
-        time: attemptData.time,          // Add time field (formatted as MM:SS)
-        questions: attemptData.questions  // Add questions field (e.g., "5/10")
-        // created_at is handled automatically by Supabase
-      }]);
+    const { error } = await supabase
+      .from('history')
+      .insert([attemptData]);
 
     if (error) throw error;
-    return data;
+    return true;
   } catch (error) {
     console.error('Error saving quiz attempt:', error);
     throw error;

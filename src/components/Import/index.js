@@ -7,6 +7,7 @@ import { analyzeCsvData, normalizeCsvData, validateYesNoAnswers } from '../../ut
 import ImportHeader from './ImportHeader';
 import FileUploadSection from './FileUploadSection';
 import ManualCsvSection from './ManualCsvSection';
+import SlideCsvSection from './SlideCsvSection';
 import ImportInfo from './ImportInfo';
 import SuccessMessage from './SuccessMessage';
 import UserImports from './UserImports';
@@ -23,12 +24,13 @@ const Import = () => {
   const [loadingImports, setLoadingImports] = useState(true);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [debugInfo, setDebugInfo] = useState(null);
-  const [importMode, setImportMode] = useState('file');
+  const [importMode, setImportMode] = useState('file'); // 'file', 'manual', or 'slides'
   const [csvText, setCsvText] = useState('');
   const [csvName, setCsvName] = useState('');
   const [quizTag, setQuizTag] = useState('');
   const [editingTag, setEditingTag] = useState(null);
   const [newTagValue, setNewTagValue] = useState('');
+  const [selectedPdf, setSelectedPdf] = useState('');
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -221,6 +223,97 @@ const Import = () => {
     }
   };
 
+  const processSlidesCsv = async () => {
+    if (!csvText.trim()) {
+      setError('Please enter CSV data');
+      return;
+    }
+
+    if (!csvName.trim()) {
+      setError('Please enter a name for your CSV file');
+      return;
+    }
+
+    setUploading(true);
+    setError(null);
+    setSuccess(false);
+
+    try {
+      let finalFileName = csvName.trim();
+      if (!finalFileName.toLowerCase().endsWith('.csv')) {
+        finalFileName += '.csv';
+      }
+
+      // Check if file exists and find available name
+      let counter = 1;
+      let fileExists = true;
+      
+      while (fileExists) {
+        const { data } = await supabase.storage
+          .from('quizes')
+          .list('', {
+            search: finalFileName
+          });
+        
+        if (!data || data.length === 0) {
+          fileExists = false;
+          break;
+        }
+        
+        const exactMatch = data.find(item => item.name === finalFileName);
+        
+        if (!exactMatch) {
+          fileExists = false;
+          break;
+        }
+        
+        const baseName = finalFileName.substring(0, finalFileName.lastIndexOf('.'));
+        const extension = '.csv';
+        finalFileName = `${baseName} (${counter})${extension}`;
+        counter++;
+      }
+
+      // Convert text to file object
+      const blob = new Blob([csvText], { type: 'text/csv' });
+      const csvFile = new File([blob], finalFileName, { type: 'text/csv' });
+
+      // Upload the generated file
+      const { error: uploadError } = await supabase.storage
+        .from('quizes')
+        .upload(finalFileName, csvFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Create record in the imports table with tag and PDF
+      const { error: dbError } = await supabase
+        .from('imports')
+        .insert([{
+          user: user.id,
+          quiz_name: finalFileName,
+          tag: quizTag.trim() || null,
+          pdf: selectedPdf || null // Store the selected PDF filename
+        }]);
+
+      if (dbError) throw dbError;
+
+      console.log(`Slides CSV uploaded successfully as: ${finalFileName}`);
+      setSuccess(true);
+      setCsvText('');
+      setCsvName('');
+      setQuizTag('');
+      setSelectedPdf('');
+      fetchUserImports();
+    } catch (err) {
+      console.error('Upload error:', err);
+      setError(err.message || 'Failed to upload CSV data');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleUpload = async () => {
     if (!file) {
       setError('Please select a file first');
@@ -371,7 +464,7 @@ const Import = () => {
                   handleTagChange={handleTagChange}
                   handleUpload={handleUpload}
                 />
-              ) : (
+              ) : importMode === 'manual' ? (
                 <ManualCsvSection 
                   csvName={csvName}
                   csvText={csvText}
@@ -383,9 +476,23 @@ const Import = () => {
                   handleTagChange={handleTagChange}
                   processManualCsv={processManualCsv}
                 />
+              ) : (
+                <SlideCsvSection 
+                  csvName={csvName}
+                  csvText={csvText}
+                  selectedPdf={selectedPdf}
+                  quizTag={quizTag}
+                  uploading={uploading}
+                  error={error}
+                  handleCsvNameChange={handleCsvNameChange}
+                  handleCsvTextChange={handleCsvTextChange}
+                  handleTagChange={handleTagChange}
+                  setSelectedPdf={setSelectedPdf}
+                  processSlidesCsv={processSlidesCsv}
+                />
               )}
 
-              <ImportInfo />
+              {importMode !== 'slides' && <ImportInfo />}
             </>
           ) : (
             <SuccessMessage handleTryAgain={handleTryAgain} />

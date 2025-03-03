@@ -19,6 +19,10 @@ import './styles/QuizSelection.css';
 import './styles/Quiz.css';
 import './styles/History.css';
 import './styles/Import.css';
+import initPdfWorker from './utils/pdfConfig';
+
+// Initialize PDF worker
+initPdfWorker();
 
 function App() {
   // Add an inline style to troubleshoot header visibility

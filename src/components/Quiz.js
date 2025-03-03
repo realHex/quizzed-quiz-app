@@ -2,7 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { saveQuizAttempt, fetchQuizContent } from '../utils/quizService';
+import { shuffleArray } from '../utils/arrayUtils';
 import '../styles/Quiz.css';
+import QuizQuestion from './Quiz/QuizQuestion';
 
 const Quiz = () => {
     const [questions, setQuestions] = useState([]);
@@ -18,6 +20,7 @@ const Quiz = () => {
     const [quizStartTime, setQuizStartTime] = useState(null);
     const [totalTime, setTotalTime] = useState(0);
     const [elapsedTime, setElapsedTime] = useState(0);
+    const [quizData, setQuizData] = useState(null); // To store metadata including PDF info
     
     const { quizName } = useParams();
     const navigate = useNavigate();
@@ -49,11 +52,18 @@ const Quiz = () => {
             setQuizStartTime(Date.now());
 
             try {
-                const quizQuestions = await fetchQuizContent(quizName);
-                setQuestions(quizQuestions);
+                // Now fetchQuizContent returns both questions and metadata
+                const { questions: fetchedQuestions, metadata } = await fetchQuizContent(quizName);
+                
+                // Shuffle questions for randomized order
+                const randomizedQuestions = shuffleArray(fetchedQuestions);
+                
+                setQuestions(randomizedQuestions);
+                setQuizData(metadata); // Store metadata including PDF info
+                
                 // Initialize empty arrays for user answers
-                setUserAnswers(quizQuestions.map(() => []));
-                setAnsweredQuestions(new Array(quizQuestions.length).fill(false));
+                setUserAnswers(randomizedQuestions.map(() => []));
+                setAnsweredQuestions(new Array(randomizedQuestions.length).fill(false));
             } catch (error) {
                 console.error('Error loading quiz:', error);
                 setError('Failed to load quiz questions');
@@ -160,12 +170,6 @@ const Quiz = () => {
             if (currentQuestion < questions.length - 1) {
                 setCurrentQuestion(currentQuestion + 1);
             }
-        } else {
-            // Mark current question as answered and show feedback
-            const newAnsweredQuestions = [...answeredQuestions];
-            newAnsweredQuestions[currentQuestion] = true;
-            setAnsweredQuestions(newAnsweredQuestions);
-            setShowFeedback(true);
         }
     };
 
@@ -191,86 +195,6 @@ const Quiz = () => {
         
         // For other types, any non-empty answer is valid
         return answer !== '';
-    };
-
-    const renderFeedback = () => {
-        const question = questions[currentQuestion];
-        const userAnswer = userAnswers[currentQuestion];
-        const isCorrect = isAnswerCorrect(question, userAnswer);
-        
-        return (
-            <div className={`feedback ${isCorrect ? 'correct' : 'incorrect'}`}>
-                <h4>{isCorrect ? '✓ Correct!' : '✗ Incorrect'}</h4>
-                {!isCorrect && (
-                    <div className="correct-answer">
-                        <p>Correct answer: 
-                            {question.type === 'MULTI' 
-                                ? question.correct.join(', ')
-                                : question.correct}
-                        </p>
-                    </div>
-                )}
-            </div>
-        );
-    };
-
-    const renderQuestion = () => {
-        const question = questions[currentQuestion];
-        if (!question) return null;
-        
-        const isAnswered = answeredQuestions[currentQuestion];
-        const currentAnswer = userAnswers[currentQuestion];
-
-        return (
-            <div className="question-container">
-                <h3 className="question-text">{question.question}</h3>
-                
-                {question.type === 'MULTI' ? (
-                    // Multi-select question
-                    <div className="options-grid multi-select">
-                        {question.options.map((option, index) => (
-                            <label 
-                                key={index}
-                                className={`option-checkbox ${
-                                    isAnswered ? 'disabled' : ''
-                                } ${
-                                    Array.isArray(currentAnswer) && currentAnswer.includes(option) ? 'selected' : ''
-                                }`}
-                            >
-                                <input
-                                    type="checkbox"
-                                    checked={Array.isArray(currentAnswer) && currentAnswer.includes(option)}
-                                    onChange={() => handleAnswerSelection(option)}
-                                    disabled={isAnswered}
-                                />
-                                <span className="checkmark"></span>
-                                {option}
-                            </label>
-                        ))}
-                    </div>
-                ) : (
-                    // Single-select question (YESNO or MCQ)
-                    <div className="options-grid">
-                        {question.options.map((option, index) => (
-                            <button
-                                key={index}
-                                className={`option-button ${
-                                    currentAnswer === option ? 'selected' : ''
-                                } ${
-                                    isAnswered ? 'disabled' : ''
-                                }`}
-                                onClick={() => handleAnswerSelection(option)}
-                                disabled={isAnswered}
-                            >
-                                {option}
-                            </button>
-                        ))}
-                    </div>
-                )}
-                
-                {(showFeedback && isAnswered) && renderFeedback()}
-            </div>
-        );
     };
 
     return (
@@ -306,34 +230,41 @@ const Quiz = () => {
                         </div>
                     </div>
 
-                    {renderQuestion()}
+                    <QuizQuestion 
+                        question={questions[currentQuestion]}
+                        onAnswerSubmit={(answer) => {
+                            const newAnswers = [...userAnswers];
+                            newAnswers[currentQuestion] = answer;
+                            setUserAnswers(newAnswers);
+                            
+                            // Mark question as answered and show feedback
+                            const newAnsweredQuestions = [...answeredQuestions];
+                            newAnsweredQuestions[currentQuestion] = true;
+                            setAnsweredQuestions(newAnsweredQuestions);
+                            setShowFeedback(true);
+                        }}
+                        showAnswer={showFeedback && answeredQuestions[currentQuestion]}
+                        userAnswer={userAnswers[currentQuestion]}
+                        onNextQuestion={handleNextQuestion}
+                        quizData={quizData} // Pass metadata including PDF info
+                        onPreviousQuestion={handlePreviousQuestion} // Pass this to handle previous button
+                        isFirstQuestion={currentQuestion === 0} // Let component know if it's first question
+                    />
 
-                    <div className="navigation-controls">
-                        <button
-                            onClick={handlePreviousQuestion}
-                            disabled={currentQuestion === 0}
-                            className="nav-button prev-button"
-                        >
-                            Previous
-                        </button>
-                        
-                        {currentQuestion === questions.length - 1 && answeredQuestions[currentQuestion] && !showFeedback ? (
+                    {/* Remove the navigation-controls section with the extra buttons, 
+                        since we're handling navigation in the QuizQuestion component now */}
+                    
+                    {/* Add submit button only when on last question and it's been answered */}
+                    {currentQuestion === questions.length - 1 && answeredQuestions[currentQuestion] && !showFeedback && (
+                        <div className="submit-quiz-container">
                             <button 
                                 onClick={handleQuizSubmit} 
-                                className="nav-button submit-quiz-btn"
+                                className="submit-quiz-btn"
                             >
                                 Submit Quiz
                             </button>
-                        ) : (
-                            <button
-                                onClick={handleNextQuestion}
-                                disabled={!isQuestionAnswered() && !showFeedback}
-                                className="nav-button next-button"
-                            >
-                                {showFeedback ? 'Next' : 'Check Answer'}
-                            </button>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             )}
         </div>

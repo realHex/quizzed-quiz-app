@@ -17,6 +17,12 @@ const ImportHeader = ({ importMode, handleModeToggle }) => {
         >
           Create CSV
         </button>
+        <button 
+          className={`import-tab ${importMode === 'slides' ? 'active' : ''}`} 
+          onClick={() => handleModeToggle('slides')}
+        >
+          Create CSV (with slides)
+        </button>
       </div>
     </div>
   );

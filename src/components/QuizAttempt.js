@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { parseQuizData } from '../services/quizService';
+import { shuffleArray } from '../utils/arrayUtils';
 import QuestionYesNo from './questions/QuestionYesNo';
 import QuestionMCQ from './questions/QuestionMCQ';
 import QuestionMulti from './questions/QuestionMulti';
@@ -25,10 +26,13 @@ const QuizAttempt = () => {
     const loadQuizData = async () => {
       try {
         const quizData = await parseQuizData(quizName);
-        setQuestions(quizData);
+        // Randomize the questions
+        const randomizedQuizData = shuffleArray(quizData);
+        setQuestions(randomizedQuizData);
+        
         // Initialize empty answers for all questions
         const initialAnswers = {};
-        quizData.forEach(question => {
+        randomizedQuizData.forEach(question => {
           initialAnswers[question.id] = question.type === 'MULTI' ? [] : '';
         });
         setAnswers(initialAnswers);
