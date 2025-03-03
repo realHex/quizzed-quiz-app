@@ -235,7 +235,7 @@ const QuizSelection = () => {
               <>
                 {Object.keys(filteredOrganized.folders).length > 0 && (
                   <div className="folders-section">
-                    <h2>Folders</h2>
+                    <h2>Categories</h2>
                     {displayMode === 'grid' ? (
                       <div className="folder-grid">
                         {Object.keys(filteredOrganized.folders).map(folderName => (

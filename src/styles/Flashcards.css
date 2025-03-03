@@ -1,0 +1,1013 @@
+/* Flashcards Main Container */
+.flashcard-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.flashcards-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.flashcards-header h1 {
+  color: #2d3748;
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  background: linear-gradient(45deg, #4299e1, #667eea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+  font-weight: 700;
+}
+
+.flashcards-header p {
+  color: #718096;
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.flashcards-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.flashcards-controls .search-box {
+  position: relative;
+  flex: 1;
+  max-width: 500px;
+}
+
+.flashcards-controls .search-box input {
+  width: 100%;
+  padding: 12px 16px 12px 45px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s;
+  background-color: #f8fafc;
+}
+
+.flashcards-controls .search-box .search-icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #a0aec0;
+  font-size: 1rem;
+}
+
+/* Flashcard Creator */
+.flashcard-creator-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.flashcard-creator {
+  background-color: white;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Step Indicator */
+.step-indicator {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.step {
+  padding: 8px 20px;
+  background-color: #edf2f7;
+  color: #718096;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.step.active {
+  background-color: #4299e1;
+  color: white;
+}
+
+.step-connector {
+  height: 2px;
+  background-color: #edf2f7;
+  width: 60px;
+}
+
+.step-connector.active {
+  background-color: #4299e1;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: #4299e1;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2);
+}
+
+.form-group small {
+  display: block;
+  color: #64748b;
+  margin-top: 5px;
+  font-size: 0.85rem;
+}
+
+/* Buttons */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+.next-button,
+.process-button,
+.save-button {
+  padding: 12px 24px;
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.back-button {
+  padding: 12px 24px;
+  background-color: #edf2f7;
+  color: #4a5568;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.next-button:hover,
+.process-button:hover,
+.save-button:hover {
+  background-color: #3182ce;
+}
+
+.back-button:hover {
+  background-color: #e2e8f0;
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Paste Area */
+.paste-instructions {
+  margin-bottom: 25px;
+  background-color: #f7fafc;
+  border-left: 4px solid #4299e1;
+  padding: 15px 20px;
+  border-radius: 0 8px 8px 0;
+}
+
+.paste-instructions p {
+  margin-top: 0;
+}
+
+.paste-instructions ol {
+  padding-left: 20px;
+  margin-bottom: 0;
+}
+
+.paste-area {
+  min-height: 200px;
+  padding: 15px;
+  border: 1px dashed #cbd5e0;
+  border-radius: 8px;
+  background-color: #f7fafc;
+  margin-bottom: 8px;
+  cursor: text;
+  transition: all 0.3s ease;
+}
+
+.paste-area:focus {
+  border-color: #4299e1;
+  outline: none;
+}
+
+/* Flashcard Preview */
+.flashcards-preview {
+  margin-top: 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.flashcard-preview-item {
+  background-color: #f8fafc;
+  border-radius: 12px;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+}
+
+.flashcard-preview-item h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #2d3748;
+  font-size: 1.1rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 10px;
+}
+
+.flashcard-preview-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.flashcard-question,
+.flashcard-answer {
+  background-color: white;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.flashcard-question strong,
+.flashcard-answer strong {
+  display: block;
+  margin-bottom: 10px;
+  color: #4a5568;
+}
+
+/* Preview image */
+.preview-image {
+  max-width: 100%;
+  max-height: 150px;
+  margin: 10px 0;
+  border-radius: 4px;
+}
+
+/* Error Message */
+.error-message {
+  background-color: #fed7d7;
+  color: #c53030;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Flashcard Sets List */
+.flashcard-sets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 25px;
+  margin-top: 20px;
+}
+
+.flashcard-set-card {
+  background-color: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+}
+
+.flashcard-set-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.set-card-body {
+  padding: 25px;
+  flex-grow: 1;
+  border-bottom: 1px solid #f0f4f8;
+}
+
+.set-card-body h3 {
+  margin: 0 0 10px;
+  color: #2d3748;
+  font-size: 1.3rem;
+}
+
+.set-tag {
+  display: inline-block;
+  background-color: #ebf4ff;
+  color: #4a67f0;
+  padding: 5px 12px;
+  font-size: 0.8rem;
+  border-radius: 20px;
+  margin-bottom: 12px;
+  font-weight: 500;
+}
+
+.set-description {
+  color: #718096;
+  font-size: 0.95rem;
+  margin: 12px 0 0;
+  line-height: 1.5;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.set-card-footer {
+  padding: 15px 25px;
+  background-color: #fafbfc;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+.create-button {
+  display: inline-block;
+  padding: 12px 24px;
+  background: linear-gradient(45deg, #4299e1, #667eea);
+  color: white;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.create-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(66, 153, 225, 0.3);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.empty-icon {
+  font-size: 3rem;
+  margin-bottom: 20px;
+}
+
+.empty-state h3 {
+  margin: 0 0 10px;
+  color: #2d3748;
+  font-size: 1.5rem;
+}
+
+.empty-state p {
+  color: #718096;
+  margin-bottom: 25px;
+}
+
+/* Loading Spinner */
+.loading-spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 0;
+}
+
+.loading-spinner {
+  border: 4px solid rgba(66, 153, 225, 0.1);
+  border-radius: 50%;
+  border-top: 4px solid #4299e1;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Flashcard Viewer */
+.flashcard-viewer-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.viewer-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.viewer-header h1 {
+  margin: 20px 0 5px;
+  color: #2d3748;
+  font-size: 2rem;
+}
+
+.back-link {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #edf2f7;
+  color: #4a5568;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.back-link:hover {
+  text-decoration: underline;
+}
+
+.flashcard-study-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.card-progress {
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+.flashcard {
+  width: 100%;
+  max-width: 900px; /* Increased from 700px */
+  height: 550px; /* Increased from 450px */
+  perspective: 1500px; /* Increased for better 3D effect */
+  margin: 20px 0;
+  cursor: pointer;
+}
+
+.flashcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.flashcard.flipped .flashcard-inner {
+  transform: rotateY(180deg);
+}
+
+.flashcard-front, .flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 15px; /* Further reduced padding */
+  border-radius: 16px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.flashcard-front {
+  background-color: white;
+}
+
+.flashcard-back {
+  background-color: #f8fafd;
+  transform: rotateY(180deg);
+}
+
+.card-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: auto;
+  padding: 0; /* Remove padding completely */
+}
+
+/* Add auto-scaling container */
+.content-scaler {
+  position: absolute;
+  width: 95%; /* Leave a small margin */
+  height: 90%; /* Leave room for the flip hint */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-origin: center center;
+  transition: transform 0.2s ease;
+}
+
+/* Style for the actual content that will be scaled */
+.scaled-content {
+  max-width: 100%;
+  max-height: 100%;
+  overflow: visible; /* Allow content to visibly scale */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Make flashcard text more consistent */
+.flashcard-text {
+  font-size: 1.8rem;
+  line-height: 1.5;
+  color: #2d3748;
+  text-align: center;
+  width: 100%;
+}
+
+/* Improve image handling */
+.flashcard-image {
+  max-width: 100%;
+  height: auto;
+  object-fit: contain;
+  margin: 5px 0;
+}
+
+/* Optimize for image-only content */
+.image-only-content .content-scaler {
+  width: 98%;
+  height: 95%;
+}
+
+.image-only-content .scaled-content {
+  width: 100%;
+  height: 100%;
+}
+
+.image-only-answer {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.card-flip-hint {
+  position: absolute;
+  bottom: 2px;
+  font-size: 0.7rem;
+  color: #a0aec0;
+  opacity: 0.5;
+  margin: 0;
+  padding: 0;
+}
+
+.card-navigation {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.nav-button {
+  padding: 10px 25px;
+  background-color: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-button:hover {
+  background-color: #3182ce;
+}
+
+.prev-button {
+  background-color: #edf2f7;
+  color: #4a5568;
+}
+
+.prev-button:hover {
+  background-color: #e2e8f0;
+}
+
+/* Add styles for delete functionality */
+.viewer-header-actions {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.delete-set-btn {
+  background-color: #f56565;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.delete-set-btn:hover {
+  background-color: #e53e3e;
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.delete-modal {
+  background-color: white;
+  border-radius: 8px;
+  padding: 24px;
+  width: 90%;
+  max-width: 400px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.delete-modal h3 {
+  margin-top: 0;
+  color: #e53e3e;
+}
+
+.warning-text {
+  color: #e53e3e;
+  font-weight: 500;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.cancel-button {
+  background-color: #edf2f7;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.delete-button {
+  background-color: #e53e3e;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.delete-button:disabled,
+.cancel-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Add styles for delete button on flashcard set cards */
+
+.flashcard-set-wrapper {
+  position: relative;
+}
+
+.delete-set-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e2e8f0;
+  color: #f56565;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  opacity: 0;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  z-index: 2;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.flashcard-set-wrapper:hover .delete-set-button {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.delete-set-button:hover {
+  background-color: #f56565;
+  color: white;
+  transform: scale(1.1);
+}
+
+/* Add styles for creator attribution */
+.set-creator {
+  color: #718096;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  display: block;
+}
+
+.viewer-subheader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+@media (min-width: 640px) {
+  .viewer-subheader {
+    flex-direction: row;
+    justify-content: center;
+    gap: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .flashcard-preview-content {
+    grid-template-columns: 1fr;
+  }
+  
+  .flashcards-controls {
+    flex-direction: column;
+  }
+  
+  .flashcards-controls .search-box {
+    width: 100%;
+    max-width: none;
+  }
+  
+  .flashcard {
+    height: 500px; /* Slightly smaller on mobile but still larger than before */
+  }
+  
+  .flashcard-front, .flashcard-back {
+    padding: 30px;
+  }
+  
+  .flashcard-text {
+    font-size: 1.4rem;
+  }
+  
+  .set-card-footer {
+    flex-direction: column;
+    gap: 5px;
+  }
+}
+
+/* Add styles for image-only flashcard answers */
+
+.flashcard-back .card-content img:only-child {
+  max-width: 90%;
+  max-height: 85%;
+  margin: 0 auto;
+  display: block;
+  object-fit: contain;
+}
+
+/* Style for answers that contain only an image wrapped in a p tag */
+.flashcard-back .card-content p:only-child img:only-child {
+  max-width: 90%;
+  max-height: 85%;
+  margin: 0 auto;
+  display: block;
+  object-fit: contain;
+}
+
+/* Add default image styling for all flashcard images */
+.flashcard-image {
+  max-width: 100%;
+  max-height: 200px;
+  margin: 10px 0;
+  border-radius: 8px;
+  object-fit: contain;
+}
+
+/* Improved styles for image-only flashcard answers */
+
+/* Style for image-only content containers */
+.image-only-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+/* Make image-only answers larger */
+.image-only-answer {
+  max-width: 95% !important;
+  max-height: 90% !important;
+  object-fit: contain !important;
+  margin: 0 auto !important;
+}
+
+/* Handle cases where images are wrapped in paragraphs */
+.image-only-content p {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+}
+
+.image-only-content p img {
+  max-width: 95%;
+  max-height: 90%;
+  object-fit: contain;
+}
+
+/* Make sure the card content has proper dimensions for large images */
+.flashcard-back .card-content {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Further optimize image display in flashcards */
+
+/* Reduce padding in card content, especially for image-only content */
+.flashcard-back .card-content {
+  padding: 10px !important; /* Reduce from 20px */
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/* Special style for image-only content to have even less padding */
+.image-only-content {
+  padding: 5px !important;
+  margin: 0 !important;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+}
+
+/* Make image-only answers larger with less restrictions */
+.image-only-answer {
+  max-width: 98% !important; /* Increase from 95% */
+  max-height: 95% !important; /* Increase from 90% */
+  object-fit: contain !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+}
+
+/* Remove margins from paragraphs in image-only content */
+.image-only-content p {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.image-only-content p img {
+  max-width: 98% !important;
+  max-height: 95% !important;
+  object-fit: contain;
+}
+
+/* Reduce padding for the flashcard sides to give more content space */
+.flashcard-front, .flashcard-back {
+  padding: 20px; /* Reduced from 40px */
+}
+
+/* Adjust the flip hint to not take too much space */
+.card-flip-hint {
+  position: absolute;
+  bottom: 5px;
+  font-size: 0.75rem;
+  color: #a0aec0;
+  opacity: 0.7;
+  margin: 0;
+  padding: 0;
+}
+
+/* Make flashcards larger and give content more space */
+
+/* Make flashcard larger */
+.flashcard {
+  width: 100%;
+  max-width: 900px; /* Increased from 700px */
+  height: 550px; /* Increased from 450px */
+  perspective: 1500px; /* Increased for better 3D effect */
+  margin: 20px 0;
+  cursor: pointer;
+}
+
+/* Reduce padding to maximize content space */
+.flashcard-front, .flashcard-back {
+  padding: 15px; /* Further reduced padding */
+  /* ...existing properties... */
+}
+
+/* Maximize content area */
+.card-content {
+  padding: 5px; /* Minimal padding */
+  width: 100%;
+  height: 100%;
+  /* ...existing properties... */
+}
+
+.flashcard-text {
+  font-size: 1.8rem; /* Increased from 1.6rem */
+  /* ...existing properties... */
+}
+
+/* Make the flip hint smaller and less intrusive */
+.card-flip-hint {
+  bottom: 2px;
+  font-size: 0.7rem;
+  opacity: 0.5;
+}
+
+/* Adjust image sizes for the larger cards */
+.flashcard-image {
+  max-height: 300px; /* Increased from 200px */
+  /* ...existing properties... */
+}
+
+/* Make image-only answers even larger */
+.image-only-answer {
+  max-width: 99% !important; /* Increase from 98% */
+  max-height: 98% !important; /* Increase from 95% */
+  /* ...existing properties... */
+}
+
+.image-only-content p img {
+  max-width: 99% !important;
+  max-height: 98% !important;
+  /* ...existing properties... */
+}
+
+/* Media queries for responsive adjustments */
+@media (max-width: 768px) {
+  .flashcard {
+    height: 500px; /* Slightly smaller on mobile but still larger than before */
+  }
+}

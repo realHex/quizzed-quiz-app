@@ -1,6 +1,7 @@
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import '../../styles/Header.css';
 
 const Header = () => {
   const { user, userProfile, signOut } = useAuth();
@@ -8,19 +9,29 @@ const Header = () => {
   
   const isAuthPage = ['/login', '/signup'].includes(location.pathname);
 
+  // Always render the header for visibility testing
   return (
-    <header className="app-header">
+    <header className="app-header" data-testid="app-header">
       {!isAuthPage && (
         <>
           <div className="nav-section">
             <div className="logo">
-              <Link to="/">Quized</Link>
+              <Link to="/">Quizzed</Link>
             </div>
             {user && (
-              <nav className="nav-links">
-                <Link to="/" className="nav-link">Quizzes</Link>
-                <Link to="/history" className="nav-link">History</Link>
-                <Link to="/import" className="nav-link">Import</Link>
+              <nav className="header-nav">
+                <NavLink to="/" className={({ isActive }) => isActive ? 'active-link' : ''} end>
+                  Quizzes
+                </NavLink>
+                <NavLink to="/flashcards" className={({ isActive }) => isActive ? 'active-link' : ''}>
+                  Flashcards
+                </NavLink>
+                <NavLink to="/import" className={({ isActive }) => isActive ? 'active-link' : ''}>
+                  Import
+                </NavLink>
+                <NavLink to="/history" className={({ isActive }) => isActive ? 'active-link' : ''}>
+                  History
+                </NavLink>
               </nav>
             )}
           </div>
