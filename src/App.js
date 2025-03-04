@@ -1,6 +1,6 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import { FlashcardProvider } from './context/FlashcardContext';
 import PrivateRoute from './components/auth/PrivateRoute';
 import Header from './components/layout/Header';
@@ -13,6 +13,7 @@ import Import from './components/Import';
 import FlashcardsList from './components/flashcards/FlashcardsList';
 import FlashcardCreator from './components/flashcards/FlashcardCreator';
 import FlashcardViewer from './components/flashcards/FlashcardViewer';
+import Settings from './components/settings/Settings';
 import './App.css';
 import './styles/Header.css';
 import './styles/QuizSelection.css';
@@ -23,6 +24,19 @@ import initPdfWorker from './utils/pdfConfig';
 
 // Initialize PDF worker
 initPdfWorker();
+
+// Protected route component
+const ProtectedRoute = ({ children }) => {
+  const { user, loading } = useAuth();
+  
+  if (loading) return <div>Loading...</div>;
+  
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+  
+  return children;
+};
 
 function App() {
   // Add an inline style to troubleshoot header visibility
@@ -99,6 +113,14 @@ function App() {
                     <PrivateRoute>
                       <FlashcardViewer />
                     </PrivateRoute>
+                  } 
+                />
+                <Route 
+                  path="/settings" 
+                  element={
+                    <ProtectedRoute>
+                      <Settings />
+                    </ProtectedRoute>
                   } 
                 />
               </Routes>

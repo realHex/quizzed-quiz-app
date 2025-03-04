@@ -32,6 +32,9 @@ const Header = () => {
                 <NavLink to="/history" className={({ isActive }) => isActive ? 'active-link' : ''}>
                   History
                 </NavLink>
+                <NavLink to="/settings" className={({ isActive }) => isActive ? 'active-link' : ''}>
+                  Settings
+                </NavLink>
               </nav>
             )}
           </div>

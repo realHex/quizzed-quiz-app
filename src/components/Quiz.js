@@ -24,7 +24,7 @@ const Quiz = () => {
     
     const { quizName } = useParams();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, userProfile } = useAuth();
 
     // Format seconds into MM:SS format
     const formatTime = useCallback((seconds) => {
@@ -55,15 +55,28 @@ const Quiz = () => {
                 // Now fetchQuizContent returns both questions and metadata
                 const { questions: fetchedQuestions, metadata } = await fetchQuizContent(quizName);
                 
-                // Shuffle questions for randomized order
-                const randomizedQuestions = shuffleArray(fetchedQuestions);
+                // Get shuffle preference from user profile
+                const shouldShuffle = userProfile?.shuffle ?? false;
+                console.log(`User shuffle preference: ${shouldShuffle ? 'ON' : 'OFF'}`);
                 
-                setQuestions(randomizedQuestions);
+                // Prepare questions - shuffle if user preference is ON
+                let quizQuestions = [...fetchedQuestions];
+                
+                if (shouldShuffle) {
+                    console.log('Shuffling questions based on user preference');
+                    quizQuestions = shuffleArray(quizQuestions);
+                } else {
+                    console.log('Using ordered questions based on user preference');
+                    // Sort questions by ID or another field if needed
+                    quizQuestions.sort((a, b) => a.id - b.id);
+                }
+                
+                setQuestions(quizQuestions);
                 setQuizData(metadata); // Store metadata including PDF info
                 
                 // Initialize empty arrays for user answers
-                setUserAnswers(randomizedQuestions.map(() => []));
-                setAnsweredQuestions(new Array(randomizedQuestions.length).fill(false));
+                setUserAnswers(quizQuestions.map(() => []));
+                setAnsweredQuestions(new Array(quizQuestions.length).fill(false));
             } catch (error) {
                 console.error('Error loading quiz:', error);
                 setError('Failed to load quiz questions');
@@ -73,7 +86,7 @@ const Quiz = () => {
         };
 
         loadQuiz();
-    }, [quizName]);
+    }, [quizName, userProfile]);
 
     const calculateScore = () => {
         let correct = 0;
