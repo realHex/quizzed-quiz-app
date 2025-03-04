@@ -17,7 +17,7 @@ const History = () => {
   const fetchAttempts = async () => {
     try {
       const { data, error } = await supabase
-        .from('attempts')
+        .from('attempts')  // Changed from 'history' to 'attempts'
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });

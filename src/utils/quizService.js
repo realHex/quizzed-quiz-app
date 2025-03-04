@@ -198,7 +198,7 @@ export const fetchQuizContent = async (quizName) => {
 export const saveQuizAttempt = async (attemptData) => {
   try {
     const { error } = await supabase
-      .from('history')
+      .from('attempts')  // Changed from 'history' to 'attempts' 
       .insert([attemptData]);
 
     if (error) throw error;
