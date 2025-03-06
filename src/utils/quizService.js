@@ -26,7 +26,7 @@ export const fetchQuizList = async (userId = null) => {
     // Fetch import records - now including the tag column
     const { data: importRecords, error: importError } = await supabase
       .from('imports')
-      .select('quiz_name, user, tag');
+      .select('quiz_name, user, tag, tag2');
       
     if (importError) {
       console.error('Error fetching import records:', importError);
@@ -98,6 +98,7 @@ export const fetchQuizList = async (userId = null) => {
         timeEstimate: '10 min',
         uploaderName: uploaderName,
         tag: importRecord?.tag || null,
+        tag2: importRecord?.tag2 || null,
         userId: importRecord?.user || null
       };
     });

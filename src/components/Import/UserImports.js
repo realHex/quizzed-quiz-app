@@ -5,7 +5,9 @@ const UserImports = ({
   userImports, 
   editingTag, 
   newTagValue, 
-  setNewTagValue, 
+  newTag2Value,
+  setNewTagValue,
+  setNewTag2Value, 
   startEditTag, 
   saveTagEdit, 
   cancelEditTag, 
@@ -13,35 +15,44 @@ const UserImports = ({
 }) => {
   return (
     <div className="user-imports-section">
-      <h3>Your Uploaded Quizzes</h3>
+      <h3>Your Imported Quizzes</h3>
       
       {loadingImports ? (
-        <div className="imports-loading">Loading your uploads...</div>
+        <div className="loading-imports">Loading your imports...</div>
       ) : userImports.length === 0 ? (
-        <div className="no-imports">No quizzes uploaded yet.</div>
+        <div className="no-imports">You haven't imported any quizzes yet.</div>
       ) : (
         <div className="imports-list">
           {userImports.map(importItem => (
             <div key={importItem.id} className="import-item">
-              <div className="import-item-name" title={importItem.quiz_name}>
+              <div className="import-item-name">
                 {importItem.quiz_name}
               </div>
               
               <div className="import-item-tag">
                 {editingTag === importItem.id ? (
                   <div className="tag-edit-form">
-                    <input
-                      type="text"
-                      value={newTagValue}
-                      onChange={(e) => setNewTagValue(e.target.value)}
-                      placeholder="Enter folder tag"
-                      className="tag-edit-input"
-                    />
+                    <div className="tag-edit-fields">
+                      <input
+                        type="text"
+                        value={newTag2Value}
+                        onChange={(e) => setNewTag2Value(e.target.value)}
+                        placeholder="Enter main category"
+                        className="tag-edit-input"
+                      />
+                      <input
+                        type="text"
+                        value={newTagValue}
+                        onChange={(e) => setNewTagValue(e.target.value)}
+                        placeholder="Enter subcategory"
+                        className="tag-edit-input"
+                      />
+                    </div>
                     <div className="tag-edit-buttons">
                       <button 
                         onClick={() => saveTagEdit(importItem.id)} 
                         className="save-tag-btn"
-                        title="Save tag"
+                        title="Save tags"
                       >
                         ✓
                       </button>
@@ -57,9 +68,15 @@ const UserImports = ({
                 ) : (
                   <div className="tag-display" onClick={() => startEditTag(importItem)}>
                     <span className="tag-label">
-                      {importItem.tag ? `Tag: ${importItem.tag}` : 'Add tag'}
+                      {importItem.tag2 && importItem.tag 
+                        ? `${importItem.tag2} / ${importItem.tag}` 
+                        : importItem.tag2 
+                          ? importItem.tag2 
+                          : importItem.tag 
+                            ? importItem.tag 
+                            : 'Add tags'}
                     </span>
-                    <button className="edit-tag-btn" title="Edit tag">
+                    <button className="edit-tag-btn" title="Edit tags">
                       ✎
                     </button>
                   </div>

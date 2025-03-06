@@ -28,8 +28,10 @@ const Import = () => {
   const [csvText, setCsvText] = useState('');
   const [csvName, setCsvName] = useState('');
   const [quizTag, setQuizTag] = useState('');
+  const [quizTag2, setQuizTag2] = useState('');
   const [editingTag, setEditingTag] = useState(null);
   const [newTagValue, setNewTagValue] = useState('');
+  const [newTag2Value, setNewTag2Value] = useState('');
   const [selectedPdf, setSelectedPdf] = useState('');
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -82,6 +84,10 @@ const Import = () => {
     setQuizTag(e.target.value);
   };
 
+  const handleTag2Change = (e) => {
+    setQuizTag2(e.target.value);
+  };
+
   const handleModeToggle = (mode) => {
     setImportMode(mode);
     setError(null);
@@ -91,11 +97,13 @@ const Import = () => {
   const startEditTag = (importItem) => {
     setEditingTag(importItem.id);
     setNewTagValue(importItem.tag || '');
+    setNewTag2Value(importItem.tag2 || '');
   };
 
   const cancelEditTag = () => {
     setEditingTag(null);
     setNewTagValue('');
+    setNewTag2Value('');
   };
 
   const saveTagEdit = async (importId) => {
@@ -116,25 +124,35 @@ const Import = () => {
       
       const { error: updateError } = await supabase
         .from('imports')
-        .update({ tag: newTagValue.trim() || null })
+        .update({ 
+          tag: newTagValue.trim() || null,
+          tag2: newTag2Value.trim() || null
+        })
         .eq('id', importId)
         .eq('user', user.id);
         
       if (updateError) throw updateError;
       
-      console.log('Tag updated successfully!');
+      console.log('Tags updated successfully!');
       
       setUserImports(prevImports => 
         prevImports.map(item => 
-          item.id === importId ? { ...item, tag: newTagValue.trim() || null } : item
+          item.id === importId 
+            ? { 
+                ...item, 
+                tag: newTagValue.trim() || null,
+                tag2: newTag2Value.trim() || null
+              } 
+            : item
         )
       );
       
       setEditingTag(null);
       setNewTagValue('');
+      setNewTag2Value('');
     } catch (err) {
-      console.error('Error updating tag:', err);
-      setError(`Failed to update tag: ${err.message}`);
+      console.error('Error updating tags:', err);
+      setError(`Failed to update tags: ${err.message}`);
     }
   };
 
@@ -204,7 +222,8 @@ const Import = () => {
         .insert([{
           user: user.id,
           quiz_name: finalFileName,
-          tag: quizTag.trim() || null
+          tag: quizTag.trim() || null,
+          tag2: quizTag2.trim() || null
         }]);
 
       if (dbError) throw dbError;
@@ -214,6 +233,7 @@ const Import = () => {
       setCsvText('');
       setCsvName('');
       setQuizTag('');
+      setQuizTag2('');
       fetchUserImports();
     } catch (err) {
       console.error('Upload error:', err);
@@ -294,6 +314,7 @@ const Import = () => {
           user: user.id,
           quiz_name: finalFileName,
           tag: quizTag.trim() || null,
+          tag2: quizTag2.trim() || null,
           pdf: selectedPdf || null // Store the selected PDF filename
         }]);
 
@@ -304,6 +325,7 @@ const Import = () => {
       setCsvText('');
       setCsvName('');
       setQuizTag('');
+      setQuizTag2('');
       setSelectedPdf('');
       fetchUserImports();
     } catch (err) {
@@ -370,7 +392,8 @@ const Import = () => {
         .insert([{
           user: user.id,
           quiz_name: finalFileName,
-          tag: quizTag.trim() || null
+          tag: quizTag.trim() || null,
+          tag2: quizTag2.trim() || null
         }]);
 
       if (dbError) throw dbError;
@@ -379,6 +402,7 @@ const Import = () => {
       setSuccess(true);
       setFile(null);
       setQuizTag('');
+      setQuizTag2('');
       document.getElementById('file-upload').value = '';
       
       fetchUserImports();
@@ -394,6 +418,7 @@ const Import = () => {
     setError(null);
     setSuccess(false);
     setQuizTag('');
+    setQuizTag2('');
     
     if (importMode === 'file') {
       setFile(null);
@@ -460,8 +485,10 @@ const Import = () => {
                   uploading={uploading}
                   error={error}
                   quizTag={quizTag}
+                  quizTag2={quizTag2}
                   handleFileChange={handleFileChange}
                   handleTagChange={handleTagChange}
+                  handleTag2Change={handleTag2Change}
                   handleUpload={handleUpload}
                 />
               ) : importMode === 'manual' ? (
@@ -469,11 +496,13 @@ const Import = () => {
                   csvName={csvName}
                   csvText={csvText}
                   quizTag={quizTag}
+                  quizTag2={quizTag2}
                   uploading={uploading}
                   error={error}
                   handleCsvNameChange={handleCsvNameChange}
                   handleCsvTextChange={handleCsvTextChange}
                   handleTagChange={handleTagChange}
+                  handleTag2Change={handleTag2Change}
                   processManualCsv={processManualCsv}
                 />
               ) : (
@@ -482,11 +511,13 @@ const Import = () => {
                   csvText={csvText}
                   selectedPdf={selectedPdf}
                   quizTag={quizTag}
+                  quizTag2={quizTag2}
                   uploading={uploading}
                   error={error}
                   handleCsvNameChange={handleCsvNameChange}
                   handleCsvTextChange={handleCsvTextChange}
                   handleTagChange={handleTagChange}
+                  handleTag2Change={handleTag2Change}
                   setSelectedPdf={setSelectedPdf}
                   processSlidesCsv={processSlidesCsv}
                 />
@@ -504,7 +535,9 @@ const Import = () => {
           userImports={userImports}
           editingTag={editingTag}
           newTagValue={newTagValue}
+          newTag2Value={newTag2Value}
           setNewTagValue={setNewTagValue}
+          setNewTag2Value={setNewTag2Value}
           startEditTag={startEditTag}
           saveTagEdit={saveTagEdit}
           cancelEditTag={cancelEditTag}

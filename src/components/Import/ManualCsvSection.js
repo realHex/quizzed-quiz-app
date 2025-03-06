@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ManualCsvSection = ({ csvName, csvText, quizTag, uploading, error, handleCsvNameChange, handleCsvTextChange, handleTagChange, processManualCsv }) => {
+const ManualCsvSection = ({ csvName, csvText, quizTag, quizTag2, uploading, error, handleCsvNameChange, handleCsvTextChange, handleTagChange, handleTag2Change, processManualCsv }) => {
   return (
     <div className="manual-csv-section">
       <div className="csv-name-input">
@@ -16,16 +16,29 @@ const ManualCsvSection = ({ csvName, csvText, quizTag, uploading, error, handleC
       </div>
       
       <div className="tag-input">
-        <label htmlFor="manual-quiz-tag">Folder Tag (Optional):</label>
+        <label htmlFor="manual-quiz-tag2">Department/Main Category (Optional):</label>
+        <input
+          type="text"
+          id="manual-quiz-tag2"
+          value={quizTag2}
+          onChange={handleTag2Change}
+          placeholder="e.g., Science, Engineering, Medicine..."
+          disabled={uploading}
+        />
+        <small className="tag-hint">Group quizzes by main department or category</small>
+      </div>
+
+      <div className="tag-input">
+        <label htmlFor="manual-quiz-tag">Course/Subcategory (Optional):</label>
         <input
           type="text"
           id="manual-quiz-tag"
           value={quizTag}
           onChange={handleTagChange}
-          placeholder="e.g., Math, Science, History..."
+          placeholder="e.g., Biology, Physics, Chemistry..."
           disabled={uploading}
         />
-        <small className="tag-hint">Group quizzes by folder tag</small>
+        <small className="tag-hint">Group quizzes by specific course or subcategory</small>
       </div>
       
       <div className="csv-text-input">

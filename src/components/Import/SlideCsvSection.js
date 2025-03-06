@@ -6,14 +6,16 @@ const SlideCsvSection = ({
   csvName, 
   csvText, 
   selectedPdf, 
-  quizTag, 
+  quizTag,
+  quizTag2,
   uploading, 
   error, 
   handleCsvNameChange, 
   handleCsvTextChange, 
   handleTagChange,
-  setSelectedPdf,
-  processSlidesCsv
+  handleTag2Change,
+  setSelectedPdf, 
+  processSlidesCsv 
 }) => {
   const [pdfFiles, setPdfFiles] = useState([]);
   const [loadingPdfs, setLoadingPdfs] = useState(true);
@@ -99,16 +101,29 @@ const SlideCsvSection = ({
       </div>
       
       <div className="tag-input">
-        <label htmlFor="slide-quiz-tag">Folder Tag (Optional):</label>
+        <label htmlFor="slide-quiz-tag2">Department/Main Category (Optional):</label>
+        <input
+          type="text"
+          id="slide-quiz-tag2"
+          value={quizTag2}
+          onChange={handleTag2Change}
+          placeholder="e.g., Science, Engineering, Medicine..."
+          disabled={uploading}
+        />
+        <small className="tag-hint">Group quizzes by main department or category</small>
+      </div>
+
+      <div className="tag-input">
+        <label htmlFor="slide-quiz-tag">Course/Subcategory (Optional):</label>
         <input
           type="text"
           id="slide-quiz-tag"
           value={quizTag}
           onChange={handleTagChange}
-          placeholder="e.g., Math, Science, History..."
+          placeholder="e.g., Biology, Physics, Chemistry..."
           disabled={uploading}
         />
-        <small className="tag-hint">Group quizzes by folder tag</small>
+        <small className="tag-hint">Group quizzes by specific course or subcategory</small>
       </div>
       
       <div className="csv-text-input">
