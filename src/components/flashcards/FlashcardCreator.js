@@ -124,14 +124,15 @@ const FlashcardCreator = () => {
             </div>
             
             <div className="form-group">
-              <label htmlFor="tag">Tag/Category</label>
+              <label htmlFor="tag">Folder Name (Tag)</label>
               <input
                 type="text"
                 id="tag"
                 value={tag}
                 onChange={(e) => setTag(e.target.value)}
-                placeholder="Enter a tag or category (optional)"
+                placeholder="Add to folder (e.g., 'Spanish', 'Biology')"
               />
+              <small>Flashcards with the same tag will be grouped together in folders</small>
             </div>
             
             <div className="form-actions">

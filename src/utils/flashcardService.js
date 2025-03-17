@@ -23,16 +23,16 @@ export const fetchFlashcardSets = async () => {
   }
 };
 
-// Update the fetchFlashcardSet function to allow viewing any set
+// Update the fetchFlashcardSet function to join with user_flashcard_progress
 export const fetchFlashcardSet = async (id) => {
   if (!id) return null;
   
   try {
-    // Get the authenticated user (still needed for checking ownership)
+    // Get the authenticated user
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
 
-    // Get the flashcard set - don't filter by user_id
+    // Get the flashcard set
     const { data: setData, error: setError } = await supabase
       .from('flashcard_sets')
       .select('*')
@@ -41,7 +41,7 @@ export const fetchFlashcardSet = async (id) => {
     
     if (setError) throw setError;
     
-    // Get the flashcard items - don't filter by user_id
+    // Get the flashcard items
     const { data: itemsData, error: itemsError } = await supabase
       .from('flashcard_items')
       .select('*')
@@ -50,10 +50,33 @@ export const fetchFlashcardSet = async (id) => {
     
     if (itemsError) throw itemsError;
     
+    // Get user's progress for these items
+    const { data: progressData, error: progressError } = await supabase
+      .from('user_flashcard_progress')
+      .select('*')
+      .eq('user_id', user.id)
+      .in('flashcard_item_id', itemsData.map(item => item.id));
+    
+    if (progressError) throw progressError;
+    
+    // Create a map of progress data by flashcard_item_id
+    const progressMap = (progressData || []).reduce((map, progress) => {
+      map[progress.flashcard_item_id] = progress;
+      return map;
+    }, {});
+    
+    // Combine the items with their progress data
+    const itemsWithProgress = itemsData.map(item => ({
+      ...item,
+      next_review_at: progressMap[item.id]?.next_review_at || null,
+      last_reviewed: progressMap[item.id]?.last_reviewed || null,
+      review_count: progressMap[item.id]?.review_count || 0
+    }));
+    
     // Combine the data
     const fullSet = {
       ...setData,
-      items: itemsData || []
+      items: itemsWithProgress || []
     };
     
     return fullSet;
@@ -284,3 +307,90 @@ function b64ToBlob(b64Data, contentType = '', sliceSize = 512) {
 
   return new Blob(byteArrays, { type: contentType });
 }
+
+// Update the next review time for a flashcard (user-specific)
+export const updateFlashcardReviewTime = async (flashcardId, difficulty) => {
+  try {
+    // Get the authenticated user
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not authenticated');
+
+    // Calculate the next review time based on difficulty
+    const now = new Date();
+    let nextReviewAt;
+
+    switch (difficulty) {
+      case 'again':
+        // Review in less than 1 minute (10 seconds for testing)
+        nextReviewAt = new Date(now.getTime() + 10 * 1000);
+        break;
+      case 'hard':
+        // Review in less than 6 minutes
+        nextReviewAt = new Date(now.getTime() + 6 * 60 * 1000);
+        break;
+      case 'good':
+        // Review in less than 15 minutes
+        nextReviewAt = new Date(now.getTime() + 15 * 60 * 1000);
+        break;
+      case 'easy':
+        // Review in less than 5 days
+        nextReviewAt = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000);
+        break;
+      default:
+        // Default: review in 1 day
+        nextReviewAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    }
+
+    // Check if a progress record exists for this user and flashcard
+    const { data: existingProgress, error: selectError } = await supabase
+      .from('user_flashcard_progress')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('flashcard_item_id', flashcardId)
+      .single();
+
+    if (selectError && selectError.code !== 'PGRST116') { // PGRST116 is "not found" which is fine
+      throw selectError;
+    }
+
+    let result;
+    if (existingProgress) {
+      // Update the existing progress record
+      const { data, error } = await supabase
+        .from('user_flashcard_progress')
+        .update({
+          next_review_at: nextReviewAt.toISOString(),
+          last_reviewed: now.toISOString(),
+          review_count: existingProgress.review_count + 1
+        })
+        .eq('user_id', user.id)
+        .eq('flashcard_item_id', flashcardId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      result = data;
+    } else {
+      // Create a new progress record
+      const { data, error } = await supabase
+        .from('user_flashcard_progress')
+        .insert([{
+          user_id: user.id,
+          flashcard_item_id: flashcardId,
+          next_review_at: nextReviewAt.toISOString(),
+          last_reviewed: now.toISOString(),
+          review_count: 1
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      result = data;
+    }
+
+    return result;
+  } catch (err) {
+    console.error('Error updating flashcard review time:', err);
+    throw err;
+  }
+};

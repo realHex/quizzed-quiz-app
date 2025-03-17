@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { fetchFlashcardSets, deleteFlashcardSet } from '../../utils/flashcardService';
 import { useAuth } from '../../context/AuthContext';
-import { supabase } from '../../utils/supabase'; // Add this import
+import { supabase } from '../../utils/supabase';
 import '../../styles/Flashcards.css';
 
 const FlashcardsList = () => {
@@ -13,12 +13,47 @@ const FlashcardsList = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingSet, setDeletingSet] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [expandedFolder, setExpandedFolder] = useState(null); // Track expanded folder
+  const [organizedSets, setOrganizedSets] = useState({ tagFolders: {}, untagged: [] });
   const { user } = useAuth();
   const [userProfiles, setUserProfiles] = useState({});
 
   useEffect(() => {
     loadFlashcardSets();
   }, []);
+
+  useEffect(() => {
+    // Organize flashcard sets when they change
+    if (flashcardSets.length > 0) {
+      const organized = organizeFlashcardsByTag(flashcardSets);
+      setOrganizedSets(organized);
+    }
+  }, [flashcardSets, searchTerm]);
+
+  // Function to organize flashcards by tag - updated to display sets directly
+  const organizeFlashcardsByTag = (sets) => {
+    const filtered = sets.filter(set => 
+      set.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (set.tag && set.tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (set.description && set.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+
+    return filtered.reduce((acc, set) => {
+      if (set.tag) {
+        if (!acc.tagFolders[set.tag]) {
+          acc.tagFolders[set.tag] = [];
+        }
+        acc.tagFolders[set.tag].push(set);
+      } else {
+        acc.untagged.push(set);
+      }
+      return acc;
+    }, { tagFolders: {}, untagged: [] });
+  };
+  
+  const toggleFolder = (folderName) => {
+    setExpandedFolder(current => current === folderName ? null : folderName);
+  };
 
   const loadFlashcardSets = async () => {
     try {
@@ -42,7 +77,7 @@ const FlashcardsList = () => {
       try {
         const { data, error } = await supabase
           .from('profiles')
-          .select('id, name') // Remove avatar_url since it doesn't exist
+          .select('id, name')
           .in('id', uniqueUserIds);
           
         if (error) throw error;
@@ -65,12 +100,6 @@ const FlashcardsList = () => {
     if (!userId) return 'Unknown';
     return userProfiles[userId]?.name || 'User';
   };
-
-  const filteredSets = flashcardSets.filter(set => 
-    set.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (set.tag && set.tag.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    (set.description && set.description.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
 
   const handleDeleteClick = (set, e) => {
     e.preventDefault();
@@ -104,6 +133,32 @@ const FlashcardsList = () => {
     return user && set.user_id === user.id;
   };
 
+  // Render flashcard set in list format
+  const renderFlashcardSetList = (set, inFolder = false) => {
+    return (
+      <div key={set.id} className="flashcard-set-list-item">
+        <Link to={`/flashcards/${set.id}`} className="flashcard-list-content">
+          <div className="flashcard-list-title">{set.title}</div>
+          {!inFolder && set.tag && <div className="flashcard-list-tag">{set.tag}</div>}
+          <div className="flashcard-list-info">
+            <span>{set.card_count || 0} {set.card_count === 1 ? 'card' : 'cards'}</span>
+            <span>Created by {getCreatorName(set.user_id)}</span>
+            <span>{new Date(set.created_at).toLocaleDateString()}</span>
+          </div>
+        </Link>
+        {isSetOwner(set) && (
+          <button 
+            className="delete-list-button"
+            onClick={(e) => handleDeleteClick(set, e)}
+            title="Delete this flashcard set"
+          >
+            🗑️
+          </button>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="flashcards-container">
       <div className="flashcards-header">
@@ -133,7 +188,7 @@ const FlashcardsList = () => {
           <div className="loading-spinner"></div>
           <p>Loading flashcard sets...</p>
         </div>
-      ) : filteredSets.length === 0 ? (
+      ) : Object.keys(organizedSets.tagFolders).length === 0 && organizedSets.untagged.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">📚</div>
           <h3>No flashcard sets found</h3>
@@ -147,36 +202,59 @@ const FlashcardsList = () => {
           </Link>
         </div>
       ) : (
-        <div className="flashcard-sets-grid">
-          {filteredSets.map(set => (
-            <div key={set.id} className="flashcard-set-wrapper">
-              <Link to={`/flashcards/${set.id}`} className="flashcard-set-card">
-                <div className="set-card-body">
-                  <h3>{set.title}</h3>
-                  {set.tag && <div className="set-tag">{set.tag}</div>}
-                  <p className="set-description">{set.description || 'No description'}</p>
-                  <div className="set-creator">Created by {getCreatorName(set.user_id)}</div>
-                </div>
-                <div className="set-card-footer">
-                  <span className="card-count">
-                    {set.card_count || 0} {set.card_count === 1 ? 'card' : 'cards'}
-                  </span>
-                  <span className="created-date">
-                    {new Date(set.created_at).toLocaleDateString()}
-                  </span>
-                </div>
-              </Link>
-              {isSetOwner(set) && (
-                <button 
-                  className="delete-set-button"
-                  onClick={(e) => handleDeleteClick(set, e)}
-                  title="Delete this flashcard set"
-                >
-                  🗑️
-                </button>
-              )}
+        <div>
+          {/* Folders view - simplified to display flashcards directly */}
+          {Object.keys(organizedSets.tagFolders).length > 0 && (
+            <div className="folders-section">
+              <h2>Folders</h2>
+              <div className="folder-list">
+                {Object.keys(organizedSets.tagFolders).map(tagName => (
+                  <div key={tagName} className="folder-list-item">
+                    <div 
+                      className={`folder-row ${expandedFolder === tagName ? 'expanded' : ''}`}
+                      onClick={() => toggleFolder(tagName)}
+                    >
+                      <div className="folder-icon">📁</div>
+                      <div className="folder-details">
+                        <h3>{tagName}</h3>
+                        <p>
+                          {organizedSets.tagFolders[tagName].length} {organizedSets.tagFolders[tagName].length === 1 ? 'set' : 'sets'}
+                        </p>
+                      </div>
+                      <div className="folder-toggle-icon">
+                        {expandedFolder === tagName ? '−' : '+'}
+                      </div>
+                    </div>
+                    
+                    {expandedFolder === tagName && (
+                      <div className="folder-contents-wrapper">
+                        <div className="folder-contents">
+                          {/* Display flashcard sets directly without additional layer */}
+                          <div className="flashcard-sets-list">
+                            {organizedSets.tagFolders[tagName].map(set => 
+                              renderFlashcardSetList(set, true)
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+          )}
+          
+          {/* Untagged flashcard sets */}
+          {organizedSets.untagged.length > 0 && (
+            <div className="untagged-section">
+              <h2>Untagged Flashcard Sets</h2>
+              <div className="flashcard-sets-list">
+                {organizedSets.untagged.map(set => 
+                  renderFlashcardSetList(set)
+                )}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
