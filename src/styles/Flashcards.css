@@ -1675,14 +1675,12 @@ button:disabled {
   display: flex;
   flex-direction: column;
   margin: 20px 0;
-  background-color: white;
   border-radius: 16px;
   overflow: hidden;
 }
 
 .flashcard-question-section {
   padding: 30px;
-  background-color: white;
 }
 
 .flashcard-question-content {
@@ -1695,7 +1693,6 @@ button:disabled {
 
 .flashcard-answer-section {
   padding: 30px;
-  background-color: #f8fafd;
   border-top: 1px solid #e2e8f0;
   min-height: 150px;
 }
