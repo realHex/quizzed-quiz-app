@@ -105,6 +105,31 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Add this function to the AuthContext provider
+  const toggleFlashcardShuffleSetting = async () => {
+    try {
+      const newValue = !(userProfile?.shuffle_flashcards ?? false);
+      
+      const { error } = await supabase
+        .from('profiles')
+        .update({ shuffle_flashcards: newValue })
+        .eq('id', user.id);
+        
+      if (error) throw error;
+      
+      // Update local state
+      setUserProfile(prev => ({
+        ...prev,
+        shuffle_flashcards: newValue
+      }));
+      
+      return newValue;
+    } catch (error) {
+      console.error('Error toggling flashcard shuffle setting:', error);
+      throw error;
+    }
+  };
+
   // Sign in function
   const signIn = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ 
@@ -156,7 +181,8 @@ export const AuthProvider = ({ children }) => {
     signOut,
     loading,
     updateUserSettings,
-    toggleShuffleSetting
+    toggleShuffleSetting,
+    toggleFlashcardShuffleSetting // Add this line
   };
 
   return (

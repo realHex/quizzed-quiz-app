@@ -23,50 +23,131 @@ export const fetchFlashcardSets = async () => {
   }
 };
 
-// Update the fetchFlashcardSet function to join with user_flashcard_progress
+// Update the fetchFlashcardSet function to handle more than 1000 items
 export const fetchFlashcardSet = async (id) => {
   if (!id) return null;
   
   try {
-    // Get the authenticated user
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error('User not authenticated');
+    // Check if user is authenticated first
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    
+    if (authError) {
+      console.error('Authentication error:', authError);
+      throw new Error('Authentication failed. Please log in again.');
+    }
+    
+    if (!user) {
+      throw new Error('User not authenticated');
+    }
 
-    // Get the flashcard set
-    const { data: setData, error: setError } = await supabase
-      .from('flashcard_sets')
-      .select('*')
-      .eq('id', id)
-      .single();
+    // Get the flashcard set with a timeout
+    const fetchWithTimeout = async () => {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
+      try {
+        const { data: setData, error: setError } = await supabase
+          .from('flashcard_sets')
+          .select('*')
+          .eq('id', id)
+          .single()
+          .abortSignal(controller.signal);
+        
+        clearTimeout(timeoutId);
+        
+        if (setError) {
+          console.error('Error fetching flashcard set:', setError);
+          throw setError;
+        }
+        
+        return setData;
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+          throw new Error('Request timed out. Please try again.');
+        }
+        throw error;
+      }
+    };
     
-    if (setError) throw setError;
+    const setData = await fetchWithTimeout();
     
-    // Get the flashcard items
-    const { data: itemsData, error: itemsError } = await supabase
-      .from('flashcard_items')
-      .select('*')
-      .eq('set_id', id)
-      .order('position', { ascending: true });
+    if (!setData) {
+      throw new Error('Flashcard set not found');
+    }
     
-    if (itemsError) throw itemsError;
+    // Get the flashcard items using pagination to overcome 1000 item limit
+    let allItems = [];
+    let hasMoreItems = true;
+    let currentPage = 0;
+    const PAGE_SIZE = 1000;
     
-    // Get user's progress for these items
-    const { data: progressData, error: progressError } = await supabase
-      .from('user_flashcard_progress')
-      .select('*')
-      .eq('user_id', user.id)
-      .in('flashcard_item_id', itemsData.map(item => item.id));
+    while (hasMoreItems) {
+      const { data: itemsPage, error: itemsError, count } = await supabase
+        .from('flashcard_items')
+        .select('*', { count: 'exact' })
+        .eq('set_id', id)
+        .order('position', { ascending: true })
+        .range(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE - 1);
+      
+      if (itemsError) {
+        console.error('Error fetching flashcard items:', itemsError);
+        throw itemsError;
+      }
+      
+      if (itemsPage) {
+        allItems = [...allItems, ...itemsPage];
+      }
+      
+      // Check if we've got all the items
+      if (!itemsPage || itemsPage.length < PAGE_SIZE) {
+        hasMoreItems = false;
+      } else {
+        currentPage++;
+      }
+    }
     
-    if (progressError) throw progressError;
+    console.log(`Retrieved ${allItems.length} total flashcard items for set ${id}`);
     
-    // Create a map of progress data by flashcard_item_id
-    const progressMap = (progressData || []).reduce((map, progress) => {
-      map[progress.flashcard_item_id] = progress;
-      return map;
-    }, {});
+    // Create a map to store progress data
+    const progressMap = {};
+    
+    // Get user's progress data in batches of 20 to prevent URL length issues
+    if (allItems && allItems.length > 0) {
+      const BATCH_SIZE = 20;
+      const itemIds = allItems.map(item => item.id);
+      
+      // Fetch progress in batches
+      for (let i = 0; i < itemIds.length; i += BATCH_SIZE) {
+        const batchIds = itemIds.slice(i, i + BATCH_SIZE);
+        
+        try {
+          const { data: progressBatch, error: progressError } = await supabase
+            .from('user_flashcard_progress')
+            .select('*')
+            .eq('user_id', user.id)
+            .in('flashcard_item_id', batchIds);
+          
+          if (progressError) {
+            console.warn('Error fetching progress batch:', progressError);
+            continue; // Continue with next batch even if this one fails
+          }
+          
+          // Add batch results to the progress map
+          if (progressBatch) {
+            progressBatch.forEach(progress => {
+              progressMap[progress.flashcard_item_id] = progress;
+            });
+          }
+        } catch (err) {
+          console.warn('Failed to fetch progress batch:', err);
+          // Continue with other batches even if one fails
+        }
+      }
+    }
     
     // Combine the items with their progress data
-    const itemsWithProgress = itemsData.map(item => ({
+    const itemsWithProgress = (allItems || []).map(item => ({
       ...item,
       next_review_at: progressMap[item.id]?.next_review_at || null,
       last_reviewed: progressMap[item.id]?.last_reviewed || null,
@@ -81,8 +162,24 @@ export const fetchFlashcardSet = async (id) => {
     
     return fullSet;
   } catch (err) {
+    // Enhanced error logging
     console.error('Error fetching flashcard set:', err);
-    throw err;
+    
+    // Create a more descriptive error message
+    let errorMessage = 'Failed to load flashcard set.';
+    if (err.message) {
+      errorMessage += ` ${err.message}`;
+    }
+    
+    if (err.code === 'PGRST116') {
+      errorMessage = 'Flashcard set not found.';
+    } else if (err.code === 'PGRST104') {
+      errorMessage = 'Database connection failed. Please try again later.';
+    }
+    
+    const enhancedError = new Error(errorMessage);
+    enhancedError.originalError = err;
+    throw enhancedError;
   }
 };
 
@@ -207,50 +304,63 @@ export const deleteFlashcardSet = async (id) => {
 };
 
 // Process HTML content from Word to extract flashcards
-export const processHtmlContent = (htmlContent) => {
-  if (!htmlContent) return [];
+export const processHtmlContent = (content) => {
+  if (!content) return [];
   
   try {
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = htmlContent;
+    // First check if it's plain text CSV format by looking for quotes and newlines
+    if (content.includes('"') && (content.includes('\n') || content.includes('\r'))) {
+      return processCSVContent(content);
+    }
     
-    // First check if it's CSV format
-    const plainText = tempDiv.textContent;
-    if (plainText.includes(',') && 
-        (plainText.includes('\n') || plainText.includes('\r'))) {
+    // For non-HTML text that might be CSV without quotes
+    if (!content.includes('<') && content.includes(',') && 
+        (content.includes('\n') || content.includes('\r'))) {
+      return processCSVContent(content);
+    }
+    
+    // If it has HTML tags, process as HTML
+    if (content.includes('<')) {
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = content;
+      
+      // Check for tables
+      const tableRows = tempDiv.querySelectorAll('tr');
+      if (tableRows.length) {
+        // Extract questions and answers from table rows
+        const flashcardItems = [];
+        
+        tableRows.forEach((row, index) => {
+          // Skip header row if present
+          if (index === 0 && row.querySelector('th')) return;
+          
+          const cells = row.querySelectorAll('td');
+          if (cells.length < 2) return;
+          
+          const questionCell = cells[0];
+          const answerCell = cells[1];
+          
+          if (!questionCell.textContent.trim() || !answerCell.innerHTML.trim()) return;
+          
+          flashcardItems.push({
+            question: questionCell.textContent.trim(),
+            answer: answerCell.innerHTML
+          });
+        });
+        
+        return flashcardItems;
+      }
+      
+      // If no tables found, treat the plain text as CSV
+      const plainText = tempDiv.textContent;
       return processCSVContent(plainText);
     }
     
-    // If not CSV, process as Word table
-    const tableRows = tempDiv.querySelectorAll('tr');
-    if (!tableRows.length) {
-      throw new Error('No table found in the pasted content');
-    }
+    // If none of the above conditions match, try to process as CSV directly
+    return processCSVContent(content);
     
-    // Extract questions and answers from table rows
-    const flashcardItems = [];
-    
-    tableRows.forEach((row, index) => {
-      // Skip header row if present
-      if (index === 0 && row.querySelector('th')) return;
-      
-      const cells = row.querySelectorAll('td');
-      if (cells.length < 2) return;
-      
-      const questionCell = cells[0];
-      const answerCell = cells[1];
-      
-      if (!questionCell.textContent.trim() || !answerCell.innerHTML.trim()) return;
-      
-      flashcardItems.push({
-        question: questionCell.textContent.trim(),
-        answer: answerCell.innerHTML
-      });
-    });
-    
-    return flashcardItems;
   } catch (err) {
-    console.error('Error processing HTML content:', err);
+    console.error('Error processing content:', err);
     throw new Error('Failed to process the pasted content');
   }
 };
@@ -274,25 +384,44 @@ function processCSVContent(text) {
       if (!line) continue;
       
       let question, answer;
+      let values = [];
       
-      // Handle quoted values with commas inside
-      if (line.includes('"')) {
-        const regex = /"([^"]*)"[^,]*,\s*"([^"]*)"/;
-        const matches = line.match(regex);
-        if (matches && matches.length >= 3) {
-          question = matches[1].trim();
-          answer = matches[2].trim();
-        }
-      } else {
-        // Simple comma-separated values
-        const parts = line.split(',');
-        if (parts.length >= 2) {
-          question = parts[0].trim();
-          answer = parts[1].trim();
+      // Simple CSV parser that handles quoted values
+      let inQuotes = false;
+      let currentValue = '';
+      
+      for (let j = 0; j < line.length; j++) {
+        const char = line[j];
+        
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+          values.push(currentValue.trim());
+          currentValue = '';
+        } else {
+          currentValue += char;
         }
       }
       
-      if (question && answer) {
+      // Don't forget the last value
+      values.push(currentValue.trim());
+      
+      // Remove surrounding quotes
+      values = values.map(val => val.replace(/^"(.*)"$/, '$1'));
+      
+      if (values.length >= 2) {
+        question = values[0];
+        answer = values[1];
+        
+        // Replace literal \n with actual newlines
+        question = question.replace(/\\n/g, '\n');
+        answer = answer.replace(/\\n/g, '\n');
+        
+        // For HTML display, convert newlines to <br> tags in the answer
+        if (!answer.includes('<')) {  // Only do this if answer isn't already HTML
+          answer = answer.replace(/\n/g, '<br>');
+        }
+        
         flashcardItems.push({
           question,
           answer
@@ -300,6 +429,7 @@ function processCSVContent(text) {
       }
     }
     
+    console.log(`Processed ${flashcardItems.length} flashcards from CSV`);
     return flashcardItems;
   } catch (err) {
     console.error('Error processing CSV content:', err);
@@ -384,16 +514,16 @@ export const updateFlashcardReviewTime = async (flashcardId, difficulty) => {
         nextReviewAt = new Date(now.getTime() + 10 * 1000);
         break;
       case 'hard':
-        // Review in less than 6 minutes
-        nextReviewAt = new Date(now.getTime() + 6 * 60 * 1000);
+        // Changed: Review in 2 days
+        nextReviewAt = new Date(now.getTime() + 2 * 24 * 60 * 60 * 1000);
         break;
       case 'good':
-        // Review in less than 15 minutes
-        nextReviewAt = new Date(now.getTime() + 15 * 60 * 1000);
+        // Changed: Review in 5 days
+        nextReviewAt = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000);
         break;
       case 'easy':
-        // Review in less than 5 days
-        nextReviewAt = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000);
+        // Changed: Review in 1 month (30 days)
+        nextReviewAt = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
         break;
       default:
         // Default: review in 1 day

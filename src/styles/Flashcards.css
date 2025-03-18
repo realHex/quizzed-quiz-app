@@ -1677,14 +1677,12 @@ button:disabled {
   margin: 20px 0;
   background-color: white;
   border-radius: 16px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
 .flashcard-question-section {
   padding: 30px;
   background-color: white;
-  border-bottom: 1px solid #e2e8f0;
 }
 
 .flashcard-question-content {
@@ -1824,3 +1822,149 @@ button:disabled {
     font-size: 0.9rem;
   }
 }
+
+/* Updated styles for the compact list view */
+.flashcards-list-view {
+  margin: 0 auto;
+  width: 100%;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.flashcards-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.flashcards-table th {
+  background-color: #edf2f7;
+  color: #4a5568;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+}
+
+.flashcards-table .question-col {
+  width: 40%; /* Reduced from 60% to make room for answer preview */
+}
+
+.flashcards-table .answer-preview-col {
+  width: 25%;
+}
+
+.flashcards-table .actions-col {
+  width: 10%;
+  text-align: center;
+}
+
+.flashcards-table .review-col {
+  width: 25%;
+  text-align: center;
+}
+
+.answer-preview-cell {
+  padding: 12px 16px;
+  color: #718096;
+  font-style: italic;
+}
+
+.answer-preview {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  font-size: 0.9rem;
+}
+
+.flashcard-list-row {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.flashcard-list-row:hover {
+  background-color: #f7fafc;
+}
+
+.question-cell {
+  padding: 12px 16px;
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.flashcard-question-text {
+  cursor: pointer;
+}
+
+.actions-cell {
+  text-align: center;
+}
+
+.toggle-answer-btn {
+  background-color: #edf2f7;
+  border: 1px solid #cbd5e0;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-answer-btn:hover {
+  background-color: #e2e8f0;
+}
+
+.review-cell {
+  padding: 8px 12px;
+  text-align: center;
+}
+
+.flashcard-review-time {
+  display: inline-block;
+  color: #4299e1;
+  padding: 6px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.answer-row {
+  background-color: #f8fafc;
+}
+
+.answer-cell {
+  padding: 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.answer-content {
+  padding-bottom: 16px;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .flashcards-table th {
+    padding: 10px 8px;
+    font-size: 0.9rem;
+  }
+  
+  .question-cell, .answer-preview-cell, .actions-cell, .review-cell {
+    padding: 10px 8px;
+    font-size: 0.9rem;
+  }
+  
+  /* Hide answer preview on small screens to save space */
+  .answer-preview-col, .answer-preview-cell {
+    display: none;
+  }
+}
+
+/* ...existing code... */
+
+.shuffle-indicator {
+  font-size: 0.8rem;
+  color: #805ad5;
+  margin-left: 5px;
+  font-style: italic;
+}
+
+/* ...existing code... */

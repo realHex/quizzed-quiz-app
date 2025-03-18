@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { fetchFlashcardSet, updateFlashcardReviewTime } from '../../utils/flashcardService';
+import { useAuth } from '../../context/AuthContext';
 import '../../styles/Flashcards.css';
 
 const FlashcardViewer = () => {
@@ -14,15 +15,36 @@ const FlashcardViewer = () => {
   const [reviewLoading, setReviewLoading] = useState(false);
   const [showAllCards, setShowAllCards] = useState(false);
   const [reviewingCardId, setReviewingCardId] = useState(null);
+  const [expandedAnswers, setExpandedAnswers] = useState({});
   const { id } = useParams();
   const navigate = useNavigate();
   const questionRef = useRef(null);
   const answerRef = useRef(null);
+  const { userProfile } = useAuth(); // Get user profile for preferences
+  
+  // Add a shuffle function
+  const shuffleArray = (array) => {
+    const newArray = [...array];
+    for (let i = newArray.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+    }
+    return newArray;
+  };
 
   useEffect(() => {
     const loadFlashcardSet = async () => {
       try {
         setLoading(true);
+        setError(null); // Reset any previous errors
+        
+        // Check for internet connectivity
+        if (!navigator.onLine) {
+          setError('You appear to be offline. Please check your internet connection.');
+          setLoading(false);
+          return;
+        }
+        
         const data = await fetchFlashcardSet(id);
         
         // Store all items for the "Show All Cards" view
@@ -30,16 +52,34 @@ const FlashcardViewer = () => {
         
         // Filter out flashcards that aren't due for review yet
         const now = new Date();
-        const availableCards = data.items.filter(item => 
+        let availableCards = data.items.filter(item => 
           !item.next_review_at || new Date(item.next_review_at) <= now
         );
+        
+        // Shuffle cards if the setting is enabled
+        if (userProfile?.shuffle_flashcards && availableCards.length > 1) {
+          availableCards = shuffleArray(availableCards);
+        }
         
         setFlashcardSet({
           ...data,
           items: availableCards
         });
       } catch (err) {
-        setError('Error loading flashcards. Please try again later.');
+        // More descriptive error message based on error type
+        let errorMessage = 'Error loading flashcards. ';
+        
+        if (err.message.includes('Authentication failed')) {
+          errorMessage += 'Please log in again.';
+        } else if (err.message.includes('timed out')) {
+          errorMessage += 'The server is taking too long to respond. Please try again later.';
+        } else if (err.message.includes('not found')) {
+          errorMessage += 'The flashcard set could not be found.';
+        } else {
+          errorMessage += 'Please try again later.';
+        }
+        
+        setError(errorMessage);
         console.error('Error loading flashcard set:', err);
       } finally {
         setLoading(false);
@@ -47,7 +87,7 @@ const FlashcardViewer = () => {
     };
 
     loadFlashcardSet();
-  }, [id]);
+  }, [id, userProfile?.shuffle_flashcards]); // Add shuffle_flashcards dependency
 
   // Reset answer visibility and recall buttons when changing cards
   useEffect(() => {
@@ -235,9 +275,14 @@ const FlashcardViewer = () => {
   const handleReturnToReview = () => {
     // Filter cards again based on updated review times
     const now = new Date();
-    const availableCards = originalItems.filter(item => 
+    let availableCards = originalItems.filter(item => 
       !item.next_review_at || new Date(item.next_review_at) <= now
     );
+    
+    // Shuffle cards if the setting is enabled
+    if (userProfile?.shuffle_flashcards && availableCards.length > 1) {
+      availableCards = shuffleArray(availableCards);
+    }
     
     setFlashcardSet(prev => ({
       ...prev,
@@ -256,67 +301,120 @@ const FlashcardViewer = () => {
     }
   };
 
-  // All Cards view
+  const toggleAnswer = (cardId) => {
+    setExpandedAnswers(prev => ({
+      ...prev,
+      [cardId]: !prev[cardId]
+    }));
+  };
+
+  // Helper function to create a preview of the answer
+  const createAnswerPreview = (answer) => {
+    // Remove HTML tags for preview
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = answer;
+    const textOnly = tempDiv.textContent;
+    
+    // Check if it's mostly an image
+    if (isImageOnly(answer)) {
+      return '[Image]';
+    }
+    
+    // Truncate and add ellipsis if needed
+    return textOnly.length > 60 ? textOnly.substring(0, 60) + '...' : textOnly;
+  };
+
+  // All Cards view - updated to list format with answer preview
   const renderAllCardsView = () => {
     return (
       <div className="flashcards-all-view">
         <h2>All Cards</h2>
-        <div className="flashcards-all-list">
-          {originalItems.map(card => (
-            <div key={card.id} className="flashcard-all-item">
-              <div className="flashcard-all-content">
-                <div className="flashcard-all-side">
-                  <h3>Question</h3>
-                  <div className="flashcard-all-question">{card.question}</div>
-                </div>
-                <div className="flashcard-all-side">
-                  <h3>Answer</h3>
-                  <div className="flashcard-all-answer" 
-                       dangerouslySetInnerHTML={{ __html: processAnswerContent(card.answer) }}></div>
-                </div>
-              </div>
-              <div className="flashcard-all-review">
-                <div 
-                  className="flashcard-review-time" 
-                  onClick={() => handleReviewTimeClick(card.id)}
-                >
-                  Next review: {formatNextReviewTime(card.next_review_at)}
-                </div>
-                {reviewingCardId === card.id && (
-                  <div className="recall-buttons recall-buttons-horizontal">
-                    <button 
-                      onClick={() => handleRecallDifficulty('again', card.id)} 
-                      className="recall-button again-button"
-                      disabled={reviewLoading}
-                    >
-                      Again (&lt;1m)
-                    </button>
-                    <button 
-                      onClick={() => handleRecallDifficulty('hard', card.id)} 
-                      className="recall-button hard-button"
-                      disabled={reviewLoading}
-                    >
-                      Hard (&lt;6m)
-                    </button>
-                    <button 
-                      onClick={() => handleRecallDifficulty('good', card.id)} 
-                      className="recall-button good-button"
-                      disabled={reviewLoading}
-                    >
-                      Good (&lt;15m)
-                    </button>
-                    <button 
-                      onClick={() => handleRecallDifficulty('easy', card.id)} 
-                      className="recall-button easy-button"
-                      disabled={reviewLoading}
-                    >
-                      Easy (&lt;5d)
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
+        <div className="flashcards-list-view">
+          <table className="flashcards-table">
+            <thead>
+              <tr>
+                <th className="question-col">Question</th>
+                <th className="answer-preview-col">Answer Preview</th>
+                <th className="actions-col">Actions</th>
+                <th className="review-col">Next Review</th>
+              </tr>
+            </thead>
+            <tbody>
+              {originalItems.map(card => (
+                <React.Fragment key={card.id}>
+                  <tr className="flashcard-list-row">
+                    <td className="question-cell">
+                      <div onClick={() => toggleAnswer(card.id)} className="flashcard-question-text">
+                        {card.question}
+                      </div>
+                    </td>
+                    <td className="answer-preview-cell">
+                      <div className="answer-preview">
+                        {createAnswerPreview(card.answer)}
+                      </div>
+                    </td>
+                    <td className="actions-cell">
+                      <button 
+                        onClick={() => toggleAnswer(card.id)} 
+                        className="toggle-answer-btn"
+                      >
+                        {expandedAnswers[card.id] ? 'Hide' : 'Answer'}
+                      </button>
+                    </td>
+                    <td className="review-cell">
+                      <div 
+                        className="flashcard-review-time" 
+                        onClick={() => handleReviewTimeClick(card.id)}
+                      >
+                        {formatNextReviewTime(card.next_review_at)}
+                      </div>
+                    </td>
+                  </tr>
+                  {expandedAnswers[card.id] && (
+                    <tr className="answer-row">
+                      <td colSpan="4" className="answer-cell">
+                        <div className="answer-content">
+                          <div dangerouslySetInnerHTML={{ __html: processAnswerContent(card.answer) }}></div>
+                        </div>
+                        {reviewingCardId === card.id && (
+                          <div className="recall-buttons recall-buttons-horizontal">
+                            <button 
+                              onClick={() => handleRecallDifficulty('again', card.id)} 
+                              className="recall-button again-button"
+                              disabled={reviewLoading}
+                            >
+                              Again (&lt;1m)
+                            </button>
+                            <button 
+                              onClick={() => handleRecallDifficulty('hard', card.id)} 
+                              className="recall-button hard-button"
+                              disabled={reviewLoading}
+                            >
+                              Okay (2d)
+                            </button>
+                            <button 
+                              onClick={() => handleRecallDifficulty('good', card.id)} 
+                              className="recall-button good-button"
+                              disabled={reviewLoading}
+                            >
+                              Good (5d)
+                            </button>
+                            <button 
+                              onClick={() => handleRecallDifficulty('easy', card.id)} 
+                              className="recall-button easy-button"
+                              disabled={reviewLoading}
+                            >
+                              Easy (30d)
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
         </div>
         <div className="flashcard-actions">
           <button onClick={handleReturnToReview} className="back-button">
@@ -343,6 +441,9 @@ const FlashcardViewer = () => {
           <div className="flashcard-review-container">
             <div className="card-progress">
               Card {currentIndex + 1} of {totalCards}
+              {userProfile?.shuffle_flashcards && (
+                <span className="shuffle-indicator"> (Shuffled)</span>
+              )}
             </div>
 
             <div className="flashcard-container-new">
@@ -353,62 +454,65 @@ const FlashcardViewer = () => {
                 </div>
               </div>
               
-              {/* Show Answer button (only when answer is hidden) */}
-              {!showAnswer && (
-                <button 
-                  onClick={handleShowAnswer} 
-                  className="show-answer-button"
-                >
-                  Show Answer
-                </button>
-              )}
-              
-              {/* Answer section (only visible when showAnswer is true) */}
-              {showAnswer && (
-                <div className="flashcard-answer-section" ref={answerRef}>
-                  <div className={`flashcard-answer-content ${isImageOnly(currentCard.answer) ? 'image-only-content' : ''}`}>
-                    <div 
-                      dangerouslySetInnerHTML={{ 
-                        __html: processAnswerContent(currentCard.answer) 
-                      }}
-                    />
+              {/* Answer section container - always present for consistent layout */}
+              <div className="flashcard-answer-container">
+                {showAnswer ? (
+                  <div className="flashcard-answer-section" ref={answerRef}>
+                    <div className={`flashcard-answer-content ${isImageOnly(currentCard.answer) ? 'image-only-content' : ''}`}>
+                      <div 
+                        dangerouslySetInnerHTML={{ 
+                          __html: processAnswerContent(currentCard.answer) 
+                        }}
+                      />
+                    </div>
                   </div>
-                </div>
-              )}
+                ) : (
+                  <div className="flashcard-answer-placeholder"></div>
+                )}
+              </div>
 
-              {/* Recall buttons only (no Show All Cards button) */}
-              {showRecallButtons && (
-                <div className="recall-buttons recall-buttons-horizontal">
+              {/* Buttons container with fixed height */}
+              <div className="flashcard-buttons-container">
+                {!showAnswer ? (
                   <button 
-                    onClick={() => handleRecallDifficulty('again')} 
-                    className="recall-button again-button"
-                    disabled={reviewLoading}
+                    onClick={handleShowAnswer} 
+                    className="show-answer-button"
                   >
-                    Again (&lt;1m)
+                    Show Answer
                   </button>
-                  <button 
-                    onClick={() => handleRecallDifficulty('hard')} 
-                    className="recall-button hard-button"
-                    disabled={reviewLoading}
-                  >
-                    Hard (&lt;6m)
-                  </button>
-                  <button 
-                    onClick={() => handleRecallDifficulty('good')} 
-                    className="recall-button good-button"
-                    disabled={reviewLoading}
-                  >
-                    Good (&lt;15m)
-                  </button>
-                  <button 
-                    onClick={() => handleRecallDifficulty('easy')} 
-                    className="recall-button easy-button"
-                    disabled={reviewLoading}
-                  >
-                    Easy (&lt;5d)
-                  </button>
-                </div>
-              )}
+                ) : (
+                  <div className="recall-buttons recall-buttons-horizontal">
+                    <button 
+                      onClick={() => handleRecallDifficulty('again')} 
+                      className="recall-button again-button"
+                      disabled={reviewLoading}
+                    >
+                      Again (&lt;1m)
+                    </button>
+                    <button 
+                      onClick={() => handleRecallDifficulty('hard')} 
+                      className="recall-button hard-button"
+                      disabled={reviewLoading}
+                    >
+                      Okay (2d)
+                    </button>
+                    <button 
+                      onClick={() => handleRecallDifficulty('good')} 
+                      className="recall-button good-button"
+                      disabled={reviewLoading}
+                    >
+                      Good (5d)
+                    </button>
+                    <button 
+                      onClick={() => handleRecallDifficulty('easy')} 
+                      className="recall-button easy-button"
+                      disabled={reviewLoading}
+                    >
+                      Easy (30d)
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

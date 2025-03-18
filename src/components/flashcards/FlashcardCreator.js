@@ -31,7 +31,7 @@ const FlashcardCreator = () => {
   
   const handlePasteContent = async () => {
     if (!pastedContent.trim()) {
-      setError('Please paste some content from your Word table');
+      setError('Please paste some content from a Word table or CSV format');
       return;
     }
     
@@ -39,11 +39,11 @@ const FlashcardCreator = () => {
     setError(null);
     
     try {
-      // Process the pasted HTML to extract questions, answers, and images
-      const processedItems = await processHtmlContent(pastedContent);
+      // Process the pasted content - could be HTML or plain CSV text
+      const processedItems = processHtmlContent(pastedContent);
       
       if (processedItems.length === 0) {
-        setError('No valid flashcard content was detected. Please check your Word table format.');
+        setError('No valid flashcard content was detected. Please check your format.');
         setLoading(false);
         return;
       }
@@ -57,6 +57,26 @@ const FlashcardCreator = () => {
     }
   };
   
+  // Modified to handle plain text input as well
+  const handleContentPaste = (e) => {
+    const clipboardData = e.clipboardData || window.clipboardData;
+    const pastedHtml = clipboardData.getData('text/html');
+    const pastedText = clipboardData.getData('text');
+    
+    if (pastedHtml && pastedHtml.trim()) {
+      e.preventDefault();
+      setPastedContent(pastedHtml);
+    } else if (pastedText && pastedText.trim()) {
+      e.preventDefault();
+      setPastedContent(pastedText);
+    }
+  };
+
+  // Also allow direct typing for CSV input
+  const handleDirectInput = (e) => {
+    setPastedContent(e.target.value);
+  };
+
   const handleSaveFlashcards = async () => {
     if (items.length === 0) {
       setError('No flashcard items to save');
@@ -80,17 +100,6 @@ const FlashcardCreator = () => {
     } catch (err) {
       setError(`Error saving flashcards: ${err.message}`);
       setLoading(false);
-    }
-  };
-  
-  const handleContentPaste = (e) => {
-    // Save the HTML content when pasting
-    const clipboardData = e.clipboardData || window.clipboardData;
-    const pastedData = clipboardData.getData('text/html');
-    
-    if (pastedData) {
-      e.preventDefault();
-      setPastedContent(pastedData);
     }
   };
   
@@ -165,13 +174,15 @@ const FlashcardCreator = () => {
             </div>
             
             <div className="form-group">
-              <div 
-                className="paste-area" 
-                contentEditable={true}
+              <textarea
+                className="paste-area"
+                value={pastedContent}
+                onChange={handleDirectInput}
                 onPaste={handleContentPaste}
-                dangerouslySetInnerHTML={{ __html: pastedContent }}
-              />
-              <small>Click in the box above and paste (Ctrl+V) your content</small>
+                placeholder="Paste your content here or type CSV data directly..."
+                rows={10}
+              ></textarea>
+              <small>You can either paste a Word table or enter CSV data in the format: "Question","Answer"</small>
             </div>
             
             <div className="form-actions">
