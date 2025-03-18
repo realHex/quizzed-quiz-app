@@ -211,10 +211,17 @@ export const processHtmlContent = (htmlContent) => {
   if (!htmlContent) return [];
   
   try {
-    // Find table rows in the HTML content
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = htmlContent;
     
+    // First check if it's CSV format
+    const plainText = tempDiv.textContent;
+    if (plainText.includes(',') && 
+        (plainText.includes('\n') || plainText.includes('\r'))) {
+      return processCSVContent(plainText);
+    }
+    
+    // If not CSV, process as Word table
     const tableRows = tempDiv.querySelectorAll('tr');
     if (!tableRows.length) {
       throw new Error('No table found in the pasted content');
@@ -247,6 +254,58 @@ export const processHtmlContent = (htmlContent) => {
     throw new Error('Failed to process the pasted content');
   }
 };
+
+// New helper function to process CSV content
+function processCSVContent(text) {
+  try {
+    // Split the text into lines
+    const lines = text.split(/\r?\n/).filter(line => line.trim());
+    
+    // Skip the header row if it exists
+    const startIndex = lines[0].includes('Flashcard') || 
+                      lines[0].includes('Question') || 
+                      lines[0].includes('Front') ? 1 : 0;
+    
+    // Process each line as a CSV row
+    const flashcardItems = [];
+    
+    for (let i = startIndex; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      
+      let question, answer;
+      
+      // Handle quoted values with commas inside
+      if (line.includes('"')) {
+        const regex = /"([^"]*)"[^,]*,\s*"([^"]*)"/;
+        const matches = line.match(regex);
+        if (matches && matches.length >= 3) {
+          question = matches[1].trim();
+          answer = matches[2].trim();
+        }
+      } else {
+        // Simple comma-separated values
+        const parts = line.split(',');
+        if (parts.length >= 2) {
+          question = parts[0].trim();
+          answer = parts[1].trim();
+        }
+      }
+      
+      if (question && answer) {
+        flashcardItems.push({
+          question,
+          answer
+        });
+      }
+    }
+    
+    return flashcardItems;
+  } catch (err) {
+    console.error('Error processing CSV content:', err);
+    throw new Error('Failed to process CSV content');
+  }
+}
 
 // Upload image from data URL
 export const uploadImageFromDataUrl = async (dataUrl) => {

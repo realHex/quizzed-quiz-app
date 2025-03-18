@@ -150,14 +150,18 @@ const FlashcardCreator = () => {
       case 2:
         return (
           <div className="paste-content">
-            <h2>Paste Your Word Table</h2>
+            <h2>Paste Your Content</h2>
             <div className="paste-instructions">
-              <p>Please copy and paste your Word table below. The first column should contain questions, and the second column should contain answers (which may include images).</p>
+              <p>Please paste your content in one of the following formats:</p>
               <ol>
-                <li>Open your Word document</li>
-                <li>Select and copy the table (Ctrl+C)</li>
-                <li>Paste it below (Ctrl+V)</li>
+                <li>
+                  <strong>Word Table:</strong> Copy and paste a table from Word with questions in the first column and answers in the second.
+                </li>
+                <li>
+                  <strong>CSV Format:</strong> Paste CSV text with the format: "Question","Answer" (with or without a header row).
+                </li>
               </ol>
+              <p><small>Example CSV format: "What is 2+2?","4"</small></p>
             </div>
             
             <div className="form-group">
@@ -167,7 +171,7 @@ const FlashcardCreator = () => {
                 onPaste={handleContentPaste}
                 dangerouslySetInnerHTML={{ __html: pastedContent }}
               />
-              <small>Click in the box above and paste (Ctrl+V) your Word table</small>
+              <small>Click in the box above and paste (Ctrl+V) your content</small>
             </div>
             
             <div className="form-actions">
