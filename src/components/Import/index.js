@@ -148,8 +148,6 @@ const Import = () => {
         
       if (updateError) throw updateError;
       
-      console.log('Tags updated successfully!');
-      
       setUserImports(prevImports => 
         prevImports.map(item => 
           item.id === importId 
@@ -177,8 +175,6 @@ const Import = () => {
       // Set this specific item as updating
       setUpdatingVisibility(prev => ({ ...prev, [importId]: true }));
       
-      console.log(`Attempting to update visibility for import ID ${importId} to ${newVisibilityState}`);
-      
       // First, verify the current state
       const { data: importData, error: fetchError } = await supabase
         .from('imports')
@@ -190,8 +186,6 @@ const Import = () => {
         console.error('Error fetching import data:', fetchError);
         throw fetchError;
       }
-      
-      console.log('Current import data:', importData);
       
       if (importData.user !== user.id) {
         throw new Error('You can only change visibility for your own imports');
@@ -210,15 +204,11 @@ const Import = () => {
         throw updateError;
       }
       
-      console.log('Update response data:', updateData);
-      
       // Verify we got data back from the update operation
       if (!updateData || updateData.length === 0) {
         console.warn('No rows were updated. This indicates a problem.');
         throw new Error('Failed to update visibility in the database');
       }
-      
-      console.log(`Quiz visibility updated successfully: ${newVisibilityState ? 'Public' : 'Private'}`);
       
       // Update the UI with the actual data from the database
       setUserImports(prevImports => 
@@ -323,7 +313,6 @@ const Import = () => {
 
       if (dbError) throw dbError;
 
-      console.log(`Manual CSV uploaded successfully as: ${finalFileName}`);
       setSuccess(true);
       setCsvText('');
       setCsvName('');
@@ -416,7 +405,6 @@ const Import = () => {
 
       if (dbError) throw dbError;
 
-      console.log(`Slides CSV uploaded successfully as: ${finalFileName}`);
       setSuccess(true);
       setCsvText('');
       setCsvName('');
@@ -495,7 +483,6 @@ const Import = () => {
 
       if (dbError) throw dbError;
 
-      console.log(`File uploaded successfully as: ${finalFileName}`);
       setSuccess(true);
       setFile(null);
       setQuizTag('');
@@ -648,7 +635,6 @@ const Import = () => {
         )
       );
       
-      console.log(`Quiz renamed successfully: ${oldFileName} → ${newFileName}`);
       cancelEditName();
     } catch (err) {
       console.error('Error renaming quiz:', err);

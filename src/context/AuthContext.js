@@ -58,8 +58,6 @@ export const AuthProvider = ({ children }) => {
     if (!user) return null;
     
     try {
-      console.log('Updating user settings:', settings); // Add logging for debugging
-      
       const { data, error } = await supabase
         .from('profiles')
         .update(settings)
@@ -71,8 +69,6 @@ export const AuthProvider = ({ children }) => {
         console.error('Supabase update error:', error);
         throw error;
       }
-      
-      console.log('Updated data from DB:', data); // Log the response
       
       // Update the local userProfile state
       setUserProfile((prev) => ({ ...prev, ...settings }));
@@ -92,12 +88,9 @@ export const AuthProvider = ({ children }) => {
       const currentShuffle = userProfile.shuffle ?? false;
       const newShuffleValue = !currentShuffle;
       
-      console.log('Toggling shuffle from', currentShuffle, 'to', newShuffleValue);
-      
       // Directly update the database with the new boolean value
       const result = await updateUserSettings({ shuffle: newShuffleValue });
       
-      console.log('Toggle result:', result);
       return result;
     } catch (error) {
       console.error('Error in toggleShuffleSetting:', error);

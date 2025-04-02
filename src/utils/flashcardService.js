@@ -107,8 +107,6 @@ export const fetchFlashcardSet = async (id) => {
       }
     }
     
-    console.log(`Retrieved ${allItems.length} total flashcard items for set ${id}`);
-    
     // Create a map to store progress data
     const progressMap = {};
     
@@ -190,8 +188,6 @@ export const createFlashcardSet = async (flashcardData) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
     
-    console.log('Creating flashcard set with user_id:', user.id);
-
     // Create the flashcard set with user_id
     const { data: setData, error: setError } = await supabase
       .from('flashcard_sets')
@@ -429,7 +425,6 @@ function processCSVContent(text) {
       }
     }
     
-    console.log(`Processed ${flashcardItems.length} flashcards from CSV`);
     return flashcardItems;
   } catch (err) {
     console.error('Error processing CSV content:', err);

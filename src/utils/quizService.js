@@ -38,7 +38,6 @@ export const fetchQuizList = async (userId = null) => {
     
     // If filtering by user, only include their quizzes
     if (userId) {
-      console.log('Filtering quizzes for user:', userId);
       const userQuizNames = filteredImports
         .filter(record => record.user === userId)
         .map(record => record.quiz_name);
@@ -47,7 +46,6 @@ export const fetchQuizList = async (userId = null) => {
       
       // If user has no quizzes, return empty array early
       if (filteredFiles.length === 0) {
-        console.log('No quizzes found for user:', userId);
         return [];
       }
     } else {

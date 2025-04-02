@@ -57,16 +57,13 @@ const Quiz = () => {
                 
                 // Get shuffle preference from user profile
                 const shouldShuffle = userProfile?.shuffle ?? false;
-                console.log(`User shuffle preference: ${shouldShuffle ? 'ON' : 'OFF'}`);
                 
                 // Prepare questions - shuffle if user preference is ON
                 let quizQuestions = [...fetchedQuestions];
                 
                 if (shouldShuffle) {
-                    console.log('Shuffling questions based on user preference');
                     quizQuestions = shuffleArray(quizQuestions);
                 } else {
-                    console.log('Using ordered questions based on user preference');
                     // Sort questions by ID or another field if needed
                     quizQuestions.sort((a, b) => a.id - b.id);
                 }
