@@ -12,6 +12,7 @@ import ImportInfo from './ImportInfo';
 import SuccessMessage from './SuccessMessage';
 import UserImports from './UserImports';
 import DeleteModal from './DeleteModal';
+import HelpModal from './HelpModal';
 
 import '../../styles/Import.css';
 
@@ -38,6 +39,7 @@ const Import = () => {
   const [editingName, setEditingName] = useState(null);
   const [newNameValue, setNewNameValue] = useState('');
   const [renamingQuiz, setRenamingQuiz] = useState(false);
+  const [helpModalOpen, setHelpModalOpen] = useState(false); // Add state for help modal
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -101,6 +103,10 @@ const Import = () => {
     setImportMode(mode);
     setError(null);
     setSuccess(false);
+  };
+
+  const handleHelpClick = () => {
+    setHelpModalOpen(true);
   };
 
   const startEditTag = (importItem) => {
@@ -655,7 +661,11 @@ const Import = () => {
   return (
     <div className="import-container">
       <div className="import-card">
-        <ImportHeader importMode={importMode} handleModeToggle={handleModeToggle} />
+        <ImportHeader 
+          importMode={importMode} 
+          handleModeToggle={handleModeToggle}
+          onHelpClick={handleHelpClick} 
+        />
 
         <div className="import-content">
           {!success ? (
@@ -744,6 +754,11 @@ const Import = () => {
         deleteConfirm={deleteConfirm}
         handleDelete={handleDelete}
         cancelDelete={cancelDelete}
+      />
+      
+      <HelpModal 
+        isOpen={helpModalOpen} 
+        onClose={() => setHelpModalOpen(false)} 
       />
     </div>
   );

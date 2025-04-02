@@ -10,4 +10,5 @@
 @import './import/TagEditor.css';
 @import './import/VisibilityToggle.css';
 @import './import/PdfSelector.css';
+@import './import/HelpModal.css'; /* Add this line */
 @import './import/Responsive.css';
