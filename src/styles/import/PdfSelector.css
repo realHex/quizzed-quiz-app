@@ -1,0 +1,183 @@
+/* PDF Selector Styles */
+.pdf-selector-container {
+  margin: 20px 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 20px;
+  background-color: #f8fafc;
+}
+
+.pdf-selector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.pdf-selector-header h3 {
+  margin: 0;
+  color: #2d3748;
+  font-size: 1.1rem;
+}
+
+.toggle-pdf-upload {
+  background-color: #4299e1;
+  color: white;
+  border: 1px solid #4299e1;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-pdf-upload:hover {
+  background-color: #3182ce;
+  color: white;
+  border-color: #3182ce;
+}
+
+.pdf-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pdf-selector select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background-color: #fff;
+  font-size: 0.95rem;
+  color: #4a5568;
+}
+
+.loading-pdfs {
+  color: #718096;
+  font-size: 0.9rem;
+  font-style: italic;
+  margin-top: 5px;
+}
+
+/* PDF Upload Section */
+.pdf-upload-section {
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  background-color: #f8fafc;
+}
+
+.pdf-upload-section h3 {
+  margin-top: 0;
+  color: #2d3748;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.pdf-upload-info {
+  color: #718096;
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+}
+
+.pdf-upload-area {
+  border: 2px dashed #cbd5e0;
+  border-radius: 12px;
+  padding: 30px 20px;
+  text-align: center;
+  margin-bottom: 15px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+
+.pdf-upload-area:hover {
+  border-color: #4299e1;
+  background-color: rgba(66, 153, 225, 0.05);
+}
+
+.upload-pdf-btn {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: linear-gradient(45deg, #4299e1, #667eea);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.upload-pdf-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(66, 153, 225, 0.2);
+}
+
+.upload-pdf-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Upload progress styles */
+.upload-progress {
+  margin: 15px 0;
+}
+
+.progress-bar {
+  height: 8px;
+  background-color: #edf2f7;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 5px;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(45deg, #4299e1, #667eea);
+  transition: width 0.3s ease;
+}
+
+.upload-progress p {
+  text-align: right;
+  font-size: 0.85rem;
+  color: #718096;
+  margin: 5px 0 0;
+}
+
+/* PDF viewer */
+.pdf-slide-viewer {
+  margin-top: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  background-color: white;
+}
+
+.pdf-slide-container {
+  width: 100%;
+  height: 500px;
+  max-height: 80vh;
+  overflow: auto;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.pdf-loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+  color: #718096;
+}
+
+.slide-text-explanation {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #f8fafc;
+  border-left: 4px solid #4299e1;
+  border-radius: 4px;
+  font-style: italic;
+  color: #4a5568;
+}

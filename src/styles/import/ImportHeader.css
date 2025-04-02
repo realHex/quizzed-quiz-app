@@ -1,0 +1,21 @@
+/* Header styles */
+.import-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.import-header h2 {
+  color: #2d3748;
+  font-size: 2rem;
+  margin-bottom: 10px;
+  background: linear-gradient(45deg, #4299e1, #667eea);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+
+.import-header p {
+  color: #718096;
+  font-size: 1.1rem;
+}

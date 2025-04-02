@@ -1,0 +1,74 @@
+/* User imports section */
+.user-imports-section {
+  margin-top: 40px;
+  border-top: 1px solid #e2e8f0;
+  padding-top: 30px;
+}
+
+.user-imports-section h3 {
+  color: #2d3748;
+  font-size: 1.3rem;
+  margin-bottom: 20px;
+}
+
+.imports-loading, .no-imports {
+  text-align: center;
+  padding: 20px;
+  color: #718096;
+}
+
+.imports-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.import-item {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.import-item:hover {
+  background: #edf2f7;
+}
+
+/* Import item name with quiz name */
+.import-item-name {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding-right: 10px;
+  min-width: 0; /* Allow flex container to shrink below min-content width */
+}
+
+.import-item-date {
+  margin-right: 20px;
+  color: #718096;
+  font-size: 0.9rem;
+}
+
+/* Delete button */
+.delete-import-btn {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  font-size: 16px;
+  background-color: transparent;
+  color: #ff0000;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-import-btn:hover {
+  background-color: rgba(229, 62, 62, 0.1);
+  transform: scale(1.1);
+}

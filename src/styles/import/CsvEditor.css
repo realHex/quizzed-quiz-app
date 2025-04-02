@@ -1,0 +1,80 @@
+/* Manual CSV section */
+.manual-csv-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.csv-name-input {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.csv-name-input label {
+  font-weight: 500;
+}
+
+.csv-name-input input {
+  padding: 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 16px;
+}
+
+.csv-text-input {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.csv-text-input label {
+  font-weight: 500;
+}
+
+.csv-text-input textarea {
+  padding: 10px;
+  border: 1px solid var(--input-border);
+  border-radius: 4px;
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  font-size: 16px;
+  min-height: 200px;
+  resize: vertical;
+  font-family: monospace;
+}
+
+.csv-example {
+  background-color: rgba(0,0,0,0.05);
+  padding: 10px 15px;
+  border-radius: 4px;
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.csv-example pre {
+  white-space: pre-wrap;
+  word-break: break-all;
+  font-family: monospace;
+  margin: 5px 0;
+}
+
+.dark-mode .csv-example {
+  background-color: rgba(255,255,255,0.05);
+}
+
+/* Slide CSV styles */
+.slide-csv-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.format-note {
+  margin-top: 8px;
+  font-style: italic;
+  color: #718096;
+  font-size: 0.9rem;
+}

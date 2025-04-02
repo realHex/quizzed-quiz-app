@@ -1,0 +1,63 @@
+/* Responsive styles */
+@media (max-width: 768px) {
+  .pdf-selector-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  
+  .toggle-pdf-upload {
+    width: 100%;
+  }
+  
+  .import-item {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px 15px 10px;
+  }
+  
+  .import-item-name {
+    margin-bottom: 10px;
+    width: 100%;
+  }
+  
+  .visibility-badge {
+    margin-left: 0;
+    margin-top: 5px;
+  }
+  
+  .import-item-tag {
+    margin-right: 0;
+    margin-bottom: 10px;
+    width: 100%;
+  }
+  
+  .delete-import-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+  }
+
+  .name-edit-form {
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: 8px;
+  }
+  
+  .name-edit-input {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .success-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .upload-another-button,
+  .view-quizzes-button {
+    width: 100%;
+  }
+}

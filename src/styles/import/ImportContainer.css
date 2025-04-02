@@ -1,0 +1,77 @@
+/* Main container styles */
+.import-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+.import-card {
+  background-color: white;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.import-content {
+  margin-top: 20px;
+}
+
+/* Error message */
+.error-message {
+  color: #e53e3e;
+  padding: 10px;
+  border-radius: 8px;
+  background-color: rgba(229, 62, 62, 0.1);
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Buttons */
+.upload-actions {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.upload-button {
+  padding: 12px 24px;
+  background: linear-gradient(45deg, #4299e1, #667eea);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(66, 153, 225, 0.3);
+}
+
+.upload-button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Import tabs navigation */
+.import-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.import-tab {
+  padding: 10px 20px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--text-secondary);
+  transition: all 0.2s;
+}
+
+.import-tab.active {
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
