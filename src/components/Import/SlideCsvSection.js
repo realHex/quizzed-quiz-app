@@ -8,12 +8,14 @@ const SlideCsvSection = ({
   selectedPdf, 
   quizTag,
   quizTag2,
+  visibility, // Add visibility prop
   uploading, 
   error, 
   handleCsvNameChange, 
   handleCsvTextChange, 
   handleTagChange,
   handleTag2Change,
+  handleVisibilityChange, // Add handler prop
   setSelectedPdf, 
   processSlidesCsv 
 }) => {
@@ -124,6 +126,24 @@ const SlideCsvSection = ({
           disabled={uploading}
         />
         <small className="tag-hint">Group quizzes by specific course or subcategory</small>
+      </div>
+      
+      {/* Add visibility toggle */}
+      <div className="visibility-toggle">
+        <label className="visibility-label">
+          <input
+            type="checkbox"
+            checked={visibility}
+            onChange={handleVisibilityChange}
+            disabled={uploading}
+          />
+          <span className="visibility-text">Make quiz visible to everyone</span>
+        </label>
+        <small className="visibility-hint">
+          {visibility 
+            ? "Everyone can see and take this quiz" 
+            : "Only you can see and take this quiz"}
+        </small>
       </div>
       
       <div className="csv-text-input">

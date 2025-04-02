@@ -10,8 +10,16 @@ const UserImports = ({
   setNewTag2Value, 
   startEditTag, 
   saveTagEdit, 
-  cancelEditTag, 
-  confirmDelete 
+  cancelEditTag,
+  editingName, 
+  newNameValue, 
+  setNewNameValue, 
+  startEditName, 
+  saveNameEdit, 
+  cancelEditName, 
+  confirmDelete,
+  toggleVisibility,
+  updatingVisibility
 }) => {
   return (
     <div className="user-imports-section">
@@ -26,7 +34,65 @@ const UserImports = ({
           {userImports.map(importItem => (
             <div key={importItem.id} className="import-item">
               <div className="import-item-name">
-                {importItem.quiz_name}
+                {editingName === importItem.id ? (
+                  <div className="name-edit-form">
+                    <input
+                      type="text"
+                      value={newNameValue}
+                      onChange={(e) => setNewNameValue(e.target.value)}
+                      className="name-edit-input"
+                      placeholder="Enter quiz name"
+                    />
+                    <div className="name-edit-buttons">
+                      <button 
+                        onClick={() => saveNameEdit(importItem.id, importItem.quiz_name)} 
+                        className="save-name-btn"
+                        title="Save name"
+                      >
+                        ✓
+                      </button>
+                      <button 
+                        onClick={cancelEditName} 
+                        className="cancel-name-btn"
+                        title="Cancel"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="quiz-name-container">
+                    <span className="quiz-name-text">{importItem.quiz_name}</span>
+                    <button 
+                      className="edit-name-btn" 
+                      onClick={() => startEditName(importItem)}
+                      title="Edit quiz name"
+                    >
+                      ✎
+                    </button>
+                  </div>
+                )}
+                <span 
+                  className={`
+                    visibility-badge 
+                    ${importItem.visibility ? 'public' : 'private'}
+                    ${updatingVisibility?.[importItem.id] ? 'updating' : ''}
+                    toggle-enabled
+                  `}
+                  onClick={() => !updatingVisibility?.[importItem.id] && toggleVisibility(importItem.id, !importItem.visibility)}
+                  role="button"
+                  tabIndex="0"
+                  aria-label={`Toggle visibility to ${importItem.visibility ? 'private' : 'public'}`}
+                >
+                  {updatingVisibility?.[importItem.id] ? (
+                    <span className="visibility-loading">Updating...</span>
+                  ) : (
+                    <>
+                      {importItem.visibility ? 'Public' : 'Private'}
+                      <span className="toggle-indicator">⇄</span>
+                    </>
+                  )}
+                </span>
               </div>
               
               <div className="import-item-tag">

@@ -29,10 +29,15 @@ const Import = () => {
   const [csvName, setCsvName] = useState('');
   const [quizTag, setQuizTag] = useState('');
   const [quizTag2, setQuizTag2] = useState('');
+  const [visibility, setVisibility] = useState(true); // Add state for visibility toggle
   const [editingTag, setEditingTag] = useState(null);
   const [newTagValue, setNewTagValue] = useState('');
   const [newTag2Value, setNewTag2Value] = useState('');
   const [selectedPdf, setSelectedPdf] = useState('');
+  const [updatingVisibility, setUpdatingVisibility] = useState({}); // Add this new state
+  const [editingName, setEditingName] = useState(null);
+  const [newNameValue, setNewNameValue] = useState('');
+  const [renamingQuiz, setRenamingQuiz] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -86,6 +91,10 @@ const Import = () => {
 
   const handleTag2Change = (e) => {
     setQuizTag2(e.target.value);
+  };
+
+  const handleVisibilityChange = (e) => {
+    setVisibility(e.target.checked);
   };
 
   const handleModeToggle = (mode) => {
@@ -156,6 +165,85 @@ const Import = () => {
     }
   };
 
+  const toggleVisibility = async (importId, newVisibilityState) => {
+    try {
+      setError(null);
+      // Set this specific item as updating
+      setUpdatingVisibility(prev => ({ ...prev, [importId]: true }));
+      
+      console.log(`Attempting to update visibility for import ID ${importId} to ${newVisibilityState}`);
+      
+      // First, verify the current state
+      const { data: importData, error: fetchError } = await supabase
+        .from('imports')
+        .select('*')
+        .eq('id', importId)
+        .single();
+      
+      if (fetchError) {
+        console.error('Error fetching import data:', fetchError);
+        throw fetchError;
+      }
+      
+      console.log('Current import data:', importData);
+      
+      if (importData.user !== user.id) {
+        throw new Error('You can only change visibility for your own imports');
+      }
+      
+      // Update the visibility - use select() to get the updated data
+      const { data: updateData, error: updateError } = await supabase
+        .from('imports')
+        .update({ visibility: newVisibilityState })
+        .eq('id', importId)
+        .eq('user', user.id)
+        .select(); // Request the updated data
+      
+      if (updateError) {
+        console.error('Error updating visibility:', updateError);
+        throw updateError;
+      }
+      
+      console.log('Update response data:', updateData);
+      
+      // Verify we got data back from the update operation
+      if (!updateData || updateData.length === 0) {
+        console.warn('No rows were updated. This indicates a problem.');
+        throw new Error('Failed to update visibility in the database');
+      }
+      
+      console.log(`Quiz visibility updated successfully: ${newVisibilityState ? 'Public' : 'Private'}`);
+      
+      // Update the UI with the actual data from the database
+      setUserImports(prevImports => 
+        prevImports.map(item => 
+          item.id === importId 
+            ? { ...item, visibility: updateData[0].visibility }
+            : item
+        )
+      );
+      
+      // After an update, refresh all imports data to ensure consistency
+      fetchUserImports();
+      
+    } catch (err) {
+      console.error('Error updating visibility:', err);
+      setError(`Failed to update visibility: ${err.message}`);
+      
+      // Revert the UI state if the update failed
+      setUserImports(prevImports => 
+        prevImports.map(item => 
+          item.id === importId 
+            ? { ...item } // Keep as is, don't update visibility
+            : item
+        )
+      );
+    } finally {
+      // Clear the updating state for this item
+      setUpdatingVisibility(prev => ({ ...prev, [importId]: false }));
+    }
+  };
+
   const processManualCsv = async () => {
     if (!csvText.trim()) {
       setError('Please enter CSV data');
@@ -223,7 +311,8 @@ const Import = () => {
           user: user.id,
           quiz_name: finalFileName,
           tag: quizTag.trim() || null,
-          tag2: quizTag2.trim() || null
+          tag2: quizTag2.trim() || null,
+          visibility: visibility // Add visibility field
         }]);
 
       if (dbError) throw dbError;
@@ -315,7 +404,8 @@ const Import = () => {
           quiz_name: finalFileName,
           tag: quizTag.trim() || null,
           tag2: quizTag2.trim() || null,
-          pdf: selectedPdf || null // Store the selected PDF filename
+          pdf: selectedPdf || null, // Store the selected PDF filename
+          visibility: visibility // Add visibility field
         }]);
 
       if (dbError) throw dbError;
@@ -393,7 +483,8 @@ const Import = () => {
           user: user.id,
           quiz_name: finalFileName,
           tag: quizTag.trim() || null,
-          tag2: quizTag2.trim() || null
+          tag2: quizTag2.trim() || null,
+          visibility: visibility // Add visibility field
         }]);
 
       if (dbError) throw dbError;
@@ -471,6 +562,96 @@ const Import = () => {
     }
   };
 
+  const startEditName = (importItem) => {
+    const nameWithoutExtension = importItem.quiz_name.replace(/\.csv$/i, '');
+    setEditingName(importItem.id);
+    setNewNameValue(nameWithoutExtension);
+  };
+
+  const cancelEditName = () => {
+    setEditingName(null);
+    setNewNameValue('');
+  };
+
+  const saveNameEdit = async (importId, oldFileName) => {
+    if (!newNameValue.trim()) {
+      setError('Quiz name cannot be empty');
+      return;
+    }
+
+    try {
+      setRenamingQuiz(true);
+      setError(null);
+      
+      let newFileName = newNameValue.trim();
+      if (!newFileName.toLowerCase().endsWith('.csv')) {
+        newFileName += '.csv';
+      }
+      
+      if (newFileName === oldFileName) {
+        cancelEditName();
+        return;
+      }
+      
+      const { data: existingFiles } = await supabase.storage
+        .from('quizes')
+        .list('', {
+          search: newFileName
+        });
+      
+      const exactMatch = existingFiles?.find(file => file.name === newFileName);
+      if (exactMatch) {
+        throw new Error('A quiz with this name already exists. Please choose a different name.');
+      }
+      
+      const { data: fileData, error: downloadError } = await supabase.storage
+        .from('quizes')
+        .download(oldFileName);
+      
+      if (downloadError) throw downloadError;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('quizes')
+        .upload(newFileName, fileData, {
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (uploadError) throw uploadError;
+      
+      const { error: updateError } = await supabase
+        .from('imports')
+        .update({ quiz_name: newFileName })
+        .eq('id', importId);
+      
+      if (updateError) throw updateError;
+      
+      const { error: deleteError } = await supabase.storage
+        .from('quizes')
+        .remove([oldFileName]);
+      
+      if (deleteError) {
+        console.warn(`Old file could not be deleted: ${deleteError.message}`);
+      }
+      
+      setUserImports(prevImports => 
+        prevImports.map(item => 
+          item.id === importId 
+            ? { ...item, quiz_name: newFileName } 
+            : item
+        )
+      );
+      
+      console.log(`Quiz renamed successfully: ${oldFileName} → ${newFileName}`);
+      cancelEditName();
+    } catch (err) {
+      console.error('Error renaming quiz:', err);
+      setError(`Failed to rename quiz: ${err.message}`);
+    } finally {
+      setRenamingQuiz(false);
+    }
+  };
+
   return (
     <div className="import-container">
       <div className="import-card">
@@ -486,9 +667,11 @@ const Import = () => {
                   error={error}
                   quizTag={quizTag}
                   quizTag2={quizTag2}
+                  visibility={visibility}
                   handleFileChange={handleFileChange}
                   handleTagChange={handleTagChange}
                   handleTag2Change={handleTag2Change}
+                  handleVisibilityChange={handleVisibilityChange}
                   handleUpload={handleUpload}
                 />
               ) : importMode === 'manual' ? (
@@ -497,12 +680,14 @@ const Import = () => {
                   csvText={csvText}
                   quizTag={quizTag}
                   quizTag2={quizTag2}
+                  visibility={visibility}
                   uploading={uploading}
                   error={error}
                   handleCsvNameChange={handleCsvNameChange}
                   handleCsvTextChange={handleCsvTextChange}
                   handleTagChange={handleTagChange}
                   handleTag2Change={handleTag2Change}
+                  handleVisibilityChange={handleVisibilityChange}
                   processManualCsv={processManualCsv}
                 />
               ) : (
@@ -512,12 +697,14 @@ const Import = () => {
                   selectedPdf={selectedPdf}
                   quizTag={quizTag}
                   quizTag2={quizTag2}
+                  visibility={visibility}
                   uploading={uploading}
                   error={error}
                   handleCsvNameChange={handleCsvNameChange}
                   handleCsvTextChange={handleCsvTextChange}
                   handleTagChange={handleTagChange}
                   handleTag2Change={handleTag2Change}
+                  handleVisibilityChange={handleVisibilityChange}
                   setSelectedPdf={setSelectedPdf}
                   processSlidesCsv={processSlidesCsv}
                 />
@@ -541,7 +728,15 @@ const Import = () => {
           startEditTag={startEditTag}
           saveTagEdit={saveTagEdit}
           cancelEditTag={cancelEditTag}
+          editingName={editingName}
+          newNameValue={newNameValue}
+          setNewNameValue={setNewNameValue}
+          startEditName={startEditName}
+          saveNameEdit={saveNameEdit}
+          cancelEditName={cancelEditName}
           confirmDelete={confirmDelete}
+          toggleVisibility={toggleVisibility}
+          updatingVisibility={updatingVisibility}
         />
       </div>
 

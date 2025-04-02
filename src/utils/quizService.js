@@ -26,8 +26,8 @@ export const fetchQuizList = async (userId = null) => {
     // Fetch import records - now including the tag column
     const { data: importRecords, error: importError } = await supabase
       .from('imports')
-      .select('quiz_name, user, tag, tag2');
-      
+      .select('quiz_name, user, tag, tag2, visibility');
+    
     if (importError) {
       console.error('Error fetching import records:', importError);
       throw importError;
@@ -50,8 +50,22 @@ export const fetchQuizList = async (userId = null) => {
         console.log('No quizzes found for user:', userId);
         return [];
       }
+    } else {
+      // If not filtering by user, only show public quizzes or the user's own quizzes
+      const { data: { user } } = await supabase.auth.getUser();
+      const currentUserId = user?.id;
+      
+      // Filter imports to only include public quizzes or the user's own quizzes
+      filteredImports = filteredImports.filter(record => 
+        record.visibility === true || // Public quizzes
+        (currentUserId && record.user === currentUserId) // User's own quizzes
+      );
+      
+      // Filter files to only include those in the filtered imports
+      const visibleQuizNames = filteredImports.map(record => record.quiz_name);
+      filteredFiles = csvFiles.filter(file => visibleQuizNames.includes(file.name));
     }
-    
+
     // Get unique user IDs from imports
     const userIds = [...new Set(filteredImports.map(record => record.user))].filter(Boolean);
     

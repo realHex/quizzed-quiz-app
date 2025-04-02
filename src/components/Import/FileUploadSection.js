@@ -1,6 +1,18 @@
 import React from 'react';
 
-const FileUploadSection = ({ file, uploading, error, quizTag, quizTag2, handleFileChange, handleTagChange, handleTag2Change, handleUpload }) => {
+const FileUploadSection = ({ 
+  file, 
+  uploading, 
+  error, 
+  quizTag, 
+  quizTag2, 
+  visibility, // Add visibility prop
+  handleFileChange, 
+  handleTagChange, 
+  handleTag2Change, 
+  handleVisibilityChange, // Add handler prop
+  handleUpload 
+}) => {
   return (
     <div className="file-upload-section">
       <div className="file-upload-area">
@@ -54,6 +66,24 @@ const FileUploadSection = ({ file, uploading, error, quizTag, quizTag2, handleFi
         <small className="tag-hint">Group quizzes by specific course or subcategory</small>
       </div>
       
+      {/* Add visibility toggle */}
+      <div className="visibility-toggle">
+        <label className="visibility-label">
+          <input
+            type="checkbox"
+            checked={visibility}
+            onChange={handleVisibilityChange}
+            disabled={uploading}
+          />
+          <span className="visibility-text">Make quiz visible to everyone</span>
+        </label>
+        <small className="visibility-hint">
+          {visibility 
+            ? "Everyone can see and take this quiz" 
+            : "Only you can see and take this quiz"}
+        </small>
+      </div>
+      
       {error && <div className="error-message">{error}</div>}
       
       <div className="upload-actions">
@@ -62,7 +92,7 @@ const FileUploadSection = ({ file, uploading, error, quizTag, quizTag2, handleFi
           className="upload-button"
           disabled={!file || uploading}
         >
-          {uploading ? 'Uploading...' : 'Upload'}
+          {uploading ? 'Uploading...' : 'Upload Quiz'}
         </button>
       </div>
     </div>
