@@ -101,6 +101,16 @@ const Settings = () => {
           </div>
         </div>
       </div>
+      
+      <div className="settings-section">
+        <h2>Contacts</h2>
+        <div className="setting-item">
+          <div className="setting-info">
+            <h3>Email</h3>
+            <p>sajithafonsekads@gmail.com</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
