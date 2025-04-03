@@ -16,7 +16,7 @@ const Header = () => {
         <>
           <div className="nav-section">
             <div className="logo">
-              <Link to="/">Quizzed</Link>
+              <Link to="/">Quized</Link>
             </div>
             {user && (
               <nav className="header-nav">
