@@ -16,6 +16,7 @@ import FlashcardCreator from './components/flashcards/FlashcardCreator';
 import FlashcardViewer from './components/flashcards/FlashcardViewer';
 import Settings from './components/settings/Settings';
 import { Analytics } from "@vercel/analytics/react"; // Import Analytics
+import { inject } from '@vercel/analytics';
 import './App.css';
 import './styles/Header.css';
 import './styles/QuizSelection.css';
@@ -47,6 +48,8 @@ const AdminContent = ({ component: Component, featureName }) => {
   // If the user is an admin, render the actual component, otherwise show the "Not Available" message
   return isAdmin() ? <Component /> : <NotAvailable featureName={featureName} />;
 };
+
+inject();
 
 function App() {
   // Add an inline style to troubleshoot header visibility
