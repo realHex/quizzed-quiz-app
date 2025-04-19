@@ -15,6 +15,7 @@ import FlashcardsList from './components/flashcards/FlashcardsList';
 import FlashcardCreator from './components/flashcards/FlashcardCreator';
 import FlashcardViewer from './components/flashcards/FlashcardViewer';
 import Settings from './components/settings/Settings';
+import { Analytics } from "@vercel/analytics/react"; // Import Analytics
 import './App.css';
 import './styles/Header.css';
 import './styles/QuizSelection.css';
@@ -134,6 +135,7 @@ function App() {
                 />
               </Routes>
             </main>
+            <Analytics /> {/* Add Analytics component */}
           </div>
         </Router>
       </FlashcardProvider>
