@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import '../../styles/Header.css';
 
 const Header = () => {
-  const { user, userProfile, signOut } = useAuth();
+  const { user, userProfile, signOut, isAdmin } = useAuth();
   const location = useLocation();
   
   const isAuthPage = ['/login', '/signup'].includes(location.pathname);
@@ -23,12 +23,15 @@ const Header = () => {
                 <NavLink to="/" className={({ isActive }) => isActive ? 'active-link' : ''} end>
                   Quizzes
                 </NavLink>
+                
+                {/* Show all links to all users */}
                 <NavLink to="/flashcards" className={({ isActive }) => isActive ? 'active-link' : ''}>
                   Flashcards
                 </NavLink>
                 <NavLink to="/import" className={({ isActive }) => isActive ? 'active-link' : ''}>
                   Import
                 </NavLink>
+                
                 <NavLink to="/history" className={({ isActive }) => isActive ? 'active-link' : ''}>
                   History
                 </NavLink>
@@ -44,6 +47,7 @@ const Header = () => {
               <>
                 <span className="welcome-message">
                   Welcome, {userProfile?.name || 'User'}
+                  {userProfile?.role === 'admin-user' && <span className="admin-badge"> (Admin)</span>}
                 </span>
                 <button onClick={signOut} className="logout-button">
                   Logout

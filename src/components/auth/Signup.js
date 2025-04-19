@@ -39,7 +39,8 @@ const Signup = () => {
           .insert([{ 
             id: data.user.id, 
             name, 
-            email 
+            email,
+            role: 'user' // Default role for new users
           }]);
         
         if (profileError) throw profileError;

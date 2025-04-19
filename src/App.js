@@ -10,6 +10,7 @@ import QuizSelection from './components/QuizSelection';
 import Quiz from './components/Quiz';
 import History from './components/History';
 import Import from './components/Import';
+import NotAvailable from './components/common/NotAvailable';
 import FlashcardsList from './components/flashcards/FlashcardsList';
 import FlashcardCreator from './components/flashcards/FlashcardCreator';
 import FlashcardViewer from './components/flashcards/FlashcardViewer';
@@ -36,6 +37,14 @@ const ProtectedRoute = ({ children }) => {
   }
   
   return children;
+};
+
+// Component that conditionally renders admin content or "Not Available" message
+const AdminContent = ({ component: Component, featureName }) => {
+  const { isAdmin } = useAuth();
+  
+  // If the user is an admin, render the actual component, otherwise show the "Not Available" message
+  return isAdmin() ? <Component /> : <NotAvailable featureName={featureName} />;
 };
 
 function App() {
@@ -87,7 +96,7 @@ function App() {
                   path="/import" 
                   element={
                     <PrivateRoute>
-                      <Import />
+                      <AdminContent component={Import} featureName="Quiz Import" />
                     </PrivateRoute>
                   } 
                 />
@@ -95,7 +104,7 @@ function App() {
                   path="/flashcards" 
                   element={
                     <PrivateRoute>
-                      <FlashcardsList />
+                      <AdminContent component={FlashcardsList} featureName="Flashcards" />
                     </PrivateRoute>
                   } 
                 />
@@ -103,7 +112,7 @@ function App() {
                   path="/flashcards/create" 
                   element={
                     <PrivateRoute>
-                      <FlashcardCreator />
+                      <AdminContent component={FlashcardCreator} featureName="Flashcard Creation" />
                     </PrivateRoute>
                   } 
                 />
@@ -111,7 +120,7 @@ function App() {
                   path="/flashcards/:id" 
                   element={
                     <PrivateRoute>
-                      <FlashcardViewer />
+                      <AdminContent component={FlashcardViewer} featureName="Flashcard Viewer" />
                     </PrivateRoute>
                   } 
                 />

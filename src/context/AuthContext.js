@@ -49,7 +49,7 @@ export const AuthProvider = ({ children }) => {
         setUserProfile(null);
       }
     }
-
+    
     fetchUserProfile();
   }, [user]);
 
@@ -123,6 +123,11 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Check if user has admin privileges
+  const isAdmin = () => {
+    return userProfile?.role === 'admin-user';
+  };
+
   // Sign in function
   const signIn = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ 
@@ -152,7 +157,12 @@ export const AuthProvider = ({ children }) => {
     if (data.user) {
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert([{ id: data.user.id, name: name, shuffle: false }]);
+        .insert([{ 
+          id: data.user.id, 
+          name: name, 
+          shuffle: false,
+          role: 'user' // Default role for new users
+        }]);
       
       if (profileError) throw profileError;
     }
@@ -175,7 +185,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     updateUserSettings,
     toggleShuffleSetting,
-    toggleFlashcardShuffleSetting // Add this line
+    toggleFlashcardShuffleSetting,
+    isAdmin
   };
 
   return (
